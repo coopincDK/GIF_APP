@@ -1,0 +1,140 @@
+const express = require('express');
+const { v4: uuidv4 } = require('uuid');
+const { getDb } = require('../db/database');
+const { authenticateToken } = require('../middleware/auth');
+const { adminOnly } = require('../middleware/adminOnly');
+
+const router = express.Router();
+
+const VALID_CATEGORIES = ['fighter', 'udvikling', 'ven', 'spiller', 'fokus', 'energi'];
+
+// GET /api/awards/week?week=X&year=Y  — alle kan se ugens helte
+router.get('/week', authenticateToken, async (req, res) => {
+  try {
+    const { week, year } = req.query;
+    if (!week || !year) return res.status(400).json({ error: 'week og year er påkrævet' });
+
+    const db = getDb();
+    const awards = (await db.execute({
+      sql: `SELECT wa.award_id, wa.category, wa.week_number, wa.year, wa.note, wa.created_at,
+                   u.user_id, u.name as user_name, u.profile_picture_url,
+                   ab.name as awarded_by_name
+            FROM weekly_awards wa
+            JOIN users u ON wa.user_id = u.user_id
+            LEFT JOIN users ab ON wa.awarded_by = ab.user_id
+            WHERE wa.week_number = ? AND wa.year = ?
+            ORDER BY wa.category`,
+      args: [parseInt(week), parseInt(year)],
+    })).rows;
+
+    res.json(awards);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+// GET /api/awards/stats/year?year=Y  — kun admin — årsstatistik
+router.get('/stats/year', authenticateToken, adminOnly, async (req, res) => {
+  try {
+    const { year } = req.query;
+    if (!year) return res.status(400).json({ error: 'year er påkrævet' });
+
+    const db = getDb();
+
+    // Hent alle awards for året med brugerinfo
+    const rows = (await db.execute({
+      sql: `SELECT wa.category, wa.user_id, u.name as user_name, u.profile_picture_url,
+                   COUNT(*) as count
+            FROM weekly_awards wa
+            JOIN users u ON wa.user_id = u.user_id
+            WHERE wa.year = ?
+            GROUP BY wa.user_id, wa.category
+            ORDER BY u.name, wa.category`,
+      args: [parseInt(year)],
+    })).rows;
+
+    // Byg pivot-struktur: { userId: { user_name, fighter: N, ..., total: N } }
+    const playerMap = {};
+    for (const row of rows) {
+      if (!playerMap[row.user_id]) {
+        playerMap[row.user_id] = {
+          user_id: row.user_id,
+          user_name: row.user_name,
+          profile_picture_url: row.profile_picture_url,
+          fighter: 0, udvikling: 0, ven: 0, spiller: 0, fokus: 0, energi: 0,
+          total: 0,
+        };
+      }
+      playerMap[row.user_id][row.category] = row.count;
+      playerMap[row.user_id].total += row.count;
+    }
+
+    const stats = Object.values(playerMap).sort((a, b) => b.total - a.total);
+    res.json({ year: parseInt(year), players: stats });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+// POST /api/awards  — admin tildeler award
+router.post('/', authenticateToken, adminOnly, async (req, res) => {
+  try {
+    const { userId, category, weekNumber, year, note } = req.body;
+    if (!userId || !category || !weekNumber || !year)
+      return res.status(400).json({ error: 'userId, category, weekNumber og year er påkrævet' });
+    if (!VALID_CATEGORIES.includes(category))
+      return res.status(400).json({ error: `Ugyldig kategori. Gyldige: ${VALID_CATEGORIES.join(', ')}` });
+
+    const db = getDb();
+    const awardId = uuidv4();
+
+    try {
+      await db.execute({
+        sql: `INSERT INTO weekly_awards (award_id, user_id, category, week_number, year, awarded_by, note)
+              VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        args: [awardId, userId, category, parseInt(weekNumber), parseInt(year), req.user.user_id, note || null],
+      });
+    } catch (dbErr) {
+      if (dbErr.message && dbErr.message.includes('UNIQUE')) {
+        return res.status(409).json({ error: 'Denne spiller har allerede fået denne award i den uge' });
+      }
+      throw dbErr;
+    }
+
+    const award = (await db.execute({
+      sql: `SELECT wa.*, u.name as user_name, u.profile_picture_url
+            FROM weekly_awards wa
+            JOIN users u ON wa.user_id = u.user_id
+            WHERE wa.award_id = ?`,
+      args: [awardId],
+    })).rows[0];
+
+    res.status(201).json({ message: `🏆 ${award.user_name} er Ugens Helt i kategorien "${category}"!`, award });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+// DELETE /api/awards/:awardId  — admin sletter award
+router.delete('/:awardId', authenticateToken, adminOnly, async (req, res) => {
+  try {
+    const db = getDb();
+    const existing = (await db.execute({
+      sql: 'SELECT 1 FROM weekly_awards WHERE award_id = ?',
+      args: [req.params.awardId],
+    })).rows[0];
+
+    if (!existing) return res.status(404).json({ error: 'Award ikke fundet' });
+
+    await db.execute({ sql: 'DELETE FROM weekly_awards WHERE award_id = ?', args: [req.params.awardId] });
+    res.json({ message: 'Award slettet' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+module.exports = router;

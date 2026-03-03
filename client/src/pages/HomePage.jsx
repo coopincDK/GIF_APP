@@ -11,6 +11,8 @@ import { useCupMode } from '../hooks/useCupMode'
 import { getMyTasks, completeTask, requestSwap, acceptSwap } from '../api/tasks'
 import { getMyBadges } from '../api/badges'
 import toast from 'react-hot-toast'
+import WeeklyAwardsDisplay from '../components/ui/WeeklyAwardsDisplay'
+import VolunteerBoard from '../components/ui/VolunteerBoard'
 
 const WEEKDAYS = ['søndag','mandag','tirsdag','onsdag','torsdag','fredag','lørdag']
 const MONTHS = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec']
@@ -128,6 +130,12 @@ export default function HomePage() {
           </div>
         )}
       </section>
+
+      {/* Ugens Helte */}
+      <WeeklyAwardsDisplay />
+
+      {/* Frivillig-board */}
+      <VolunteerBoard />
 
       {/* Hurtig navigation */}
       <section className="px-4 mt-6 pb-4">

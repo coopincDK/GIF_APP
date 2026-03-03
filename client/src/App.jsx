@@ -14,6 +14,7 @@ import CoachCornerPage from './pages/CoachCornerPage'
 import CupCommandPage from './pages/CupCommandPage'
 import ProfilePage from './pages/ProfilePage'
 import AdminPage from './pages/AdminPage'
+import YearStatsPage from './pages/YearStatsPage'
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth()
@@ -56,6 +57,7 @@ export default function App() {
         {/* Admin only — AppShell med TopBar + BottomNav */}
         <Route path="/spin"  element={<AdminRoute><SpinWheelPage /></AdminRoute>} />
         <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
+        <Route path="/year-stats" element={<AdminRoute><YearStatsPage /></AdminRoute>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

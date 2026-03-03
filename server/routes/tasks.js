@@ -208,4 +208,53 @@ router.get('/swaps/open', authenticateToken, async (req, res) => {
   }
 });
 
+// GET /api/tasks/laundry-counts?teamId=X
+// Returnerer antal tøjvaske per spiller — bruges til weighted spin på frontend.
+//
+// Weighted spin logik (frontend bruger spin_weight som segment-størrelse på hjulet):
+//   0 vaske  → vægt 10  (størst segment = størst chance)
+//   1 vask   → vægt 7
+//   2 vaske  → vægt 4
+//   3+ vaske → vægt 1   (mindst segment = mindst chance)
+router.get('/laundry-counts', authenticateToken, async (req, res) => {
+  try {
+    const teamId = req.query.teamId || req.user.team_id;
+    const db = getDb();
+
+    const rows = (await db.execute({
+      sql: `SELECT u.user_id, u.name,
+                   COUNT(ta.assignment_id) as laundry_count
+            FROM users u
+            LEFT JOIN task_assignments ta ON u.user_id = ta.user_id
+            LEFT JOIN tasks t ON ta.task_id = t.task_id
+                              AND (t.title LIKE '%tøjvask%' OR t.type = 'tøjvask')
+            WHERE u.team_id = ? AND u.role = 'user'
+            GROUP BY u.user_id, u.name
+            ORDER BY laundry_count ASC, u.name ASC`,
+      args: [teamId],
+    })).rows;
+
+    const result = rows.map(row => {
+      const count = row.laundry_count ?? 0;
+      let spin_weight;
+      if      (count === 0) spin_weight = 10;
+      else if (count === 1) spin_weight = 7;
+      else if (count === 2) spin_weight = 4;
+      else                  spin_weight = 1;
+
+      return {
+        user_id:      row.user_id,
+        name:         row.name,
+        laundry_count: count,
+        spin_weight,
+      };
+    });
+
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
 module.exports = router;

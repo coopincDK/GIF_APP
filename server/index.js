@@ -45,7 +45,9 @@ app.use('/api/tasks',   require('./routes/tasks'));
 app.use('/api/badges',  require('./routes/badges'));
 app.use('/api/content', require('./routes/content'));
 app.use('/api/cup',     require('./routes/cup'));
-app.use('/api/admin',   require('./routes/admin'));
+app.use('/api/admin',      require('./routes/admin'));
+app.use('/api/awards',     require('./routes/awards'));
+app.use('/api/volunteers', require('./routes/volunteers'));
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

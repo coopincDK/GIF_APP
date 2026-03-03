@@ -104,3 +104,29 @@ CREATE TABLE IF NOT EXISTS app_settings (
   value TEXT NOT NULL,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Ugens Helte (admin tildeler efter kamp/træning)
+CREATE TABLE IF NOT EXISTS weekly_awards (
+  award_id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(user_id),
+  category TEXT NOT NULL, -- 'fighter','udvikling','ven','spiller','fokus','energi'
+  week_number INTEGER NOT NULL,
+  year INTEGER NOT NULL,
+  awarded_by TEXT REFERENCES users(user_id),
+  note TEXT,
+  created_at TEXT DEFAULT (datetime('now')),
+  UNIQUE(user_id, category, week_number, year)
+);
+
+-- Frivillig tilmeldinger
+CREATE TABLE IF NOT EXISTS volunteer_signups (
+  signup_id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(user_id),
+  volunteer_type TEXT NOT NULL, -- 'frugt','kage','koersel','fotos'
+  match_date TEXT NOT NULL,
+  confirmed INTEGER DEFAULT 0,
+  confirmed_by TEXT REFERENCES users(user_id),
+  confirmed_at TEXT,
+  created_at TEXT DEFAULT (datetime('now')),
+  UNIQUE(user_id, volunteer_type, match_date)
+);
