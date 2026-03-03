@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { useAuth } from './hooks/useAuth'
 import LoadingSpinner from './components/ui/LoadingSpinner'
+import AppShell from './components/layout/AppShell'
 
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -18,7 +19,7 @@ function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth()
   if (loading) return <LoadingSpinner message="Logger ind..." />
   if (!isAuthenticated) return <Navigate to="/login" replace />
-  return children
+  return <AppShell>{children}</AppShell>
 }
 
 function AdminRoute({ children }) {
@@ -26,7 +27,7 @@ function AdminRoute({ children }) {
   if (loading) return <LoadingSpinner message="Logger ind..." />
   if (!isAuthenticated) return <Navigate to="/login" replace />
   if (!isAdmin) return <Navigate to="/" replace />
-  return children
+  return <AppShell>{children}</AppShell>
 }
 
 function PublicRoute({ children }) {
@@ -40,20 +41,20 @@ export default function App() {
   return (
     <AnimatePresence mode="wait">
       <Routes>
-        {/* Public */}
-        <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+        {/* Public — ingen AppShell */}
+        <Route path="/login"    element={<PublicRoute><LoginPage /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
 
-        {/* Protected */}
-        <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+        {/* Protected — AppShell med TopBar + BottomNav */}
+        <Route path="/"        element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
         <Route path="/treasure" element={<ProtectedRoute><TreasurePage /></ProtectedRoute>} />
-        <Route path="/team" element={<ProtectedRoute><TeamBannerPage /></ProtectedRoute>} />
-        <Route path="/coach" element={<ProtectedRoute><CoachCornerPage /></ProtectedRoute>} />
-        <Route path="/cup" element={<ProtectedRoute><CupCommandPage /></ProtectedRoute>} />
+        <Route path="/team"    element={<ProtectedRoute><TeamBannerPage /></ProtectedRoute>} />
+        <Route path="/coach"   element={<ProtectedRoute><CoachCornerPage /></ProtectedRoute>} />
+        <Route path="/cup"     element={<ProtectedRoute><CupCommandPage /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
-        {/* Admin only */}
-        <Route path="/spin" element={<AdminRoute><SpinWheelPage /></AdminRoute>} />
+        {/* Admin only — AppShell med TopBar + BottomNav */}
+        <Route path="/spin"  element={<AdminRoute><SpinWheelPage /></AdminRoute>} />
         <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
 
         {/* Fallback */}
