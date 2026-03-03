@@ -5,16 +5,15 @@ import { getVolunteers, signupVolunteer, cancelVolunteer } from '../../api/volun
 import { useAuth } from '../../hooks/useAuth'
 
 const TYPES = [
-  { id: 'frugt',    label: 'Frugt med',  emoji: '🍎', desc: 'Medbring frugt til holdet' },
-  { id: 'kage',     label: 'Kage med',   emoji: '🎂', desc: 'Medbring kage efter kampen' },
-  { id: 'koersel',  label: 'Kørsel',     emoji: '🚗', desc: 'Kør andre spillere til kamp' },
-  { id: 'fotos',    label: 'Fotos',      emoji: '📸', desc: 'Tag billeder til holdet' },
+  { id: 'frugt',   label: 'Frugt med', emoji: '🍎', desc: 'Frugt til holdet' },
+  { id: 'kage',    label: 'Kage med',  emoji: '🎂', desc: 'Kage efter kampen' },
+  { id: 'koersel', label: 'Kørsel',    emoji: '🚗', desc: 'Kør spillere' },
+  { id: 'fotos',   label: 'Fotos',     emoji: '📸', desc: 'Tag billeder' },
 ]
 
 function getNextSaturday() {
   const d = new Date()
-  const day = d.getDay()
-  const diff = (6 - day + 7) % 7 || 7
+  const diff = (6 - d.getDay() + 7) % 7 || 7
   d.setDate(d.getDate() + diff)
   return d.toISOString().split('T')[0]
 }
@@ -24,10 +23,8 @@ export default function VolunteerBoard() {
   const [matchDate, setMatchDate] = useState(getNextSaturday())
   const [grouped, setGrouped] = useState({})
   const [mySignups, setMySignups] = useState({})
-  const [loading, setLoading] = useState(true)
 
   const fetchData = () => {
-    setLoading(true)
     getVolunteers(matchDate)
       .then(({ data }) => {
         setGrouped(data.grouped || {})
@@ -39,7 +36,6 @@ export default function VolunteerBoard() {
         setMySignups(mine)
       })
       .catch(() => {})
-      .finally(() => setLoading(false))
   }
 
   useEffect(() => { fetchData() }, [matchDate])
@@ -68,18 +64,20 @@ export default function VolunteerBoard() {
   }
 
   return (
-    <section className="px-4 mt-5">
+    <section className="px-4 mt-6">
+      {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-black text-gray-800">🙋 Hvem hjælper til?</h2>
         <input
           type="date"
           value={matchDate}
           onChange={e => setMatchDate(e.target.value)}
-          className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-full border-0 outline-none"
+          className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-full border-0 outline-none"
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      {/* 2x2 grid — center-aligned indhold */}
+      <div className="grid grid-cols-2 gap-3">
         {TYPES.map((t, i) => {
           const signups = grouped[t.id] || []
           const isMine = !!mySignups[t.id]
@@ -89,40 +87,44 @@ export default function VolunteerBoard() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.07 }}
-              className={`bg-white rounded-2xl shadow-sm border-2 p-3 ${isMine ? 'border-primary' : 'border-gray-100'}`}
+              className={`bg-white rounded-3xl shadow-sm border-2 p-4 flex flex-col items-center text-center ${
+                isMine ? 'border-primary bg-primary/5' : 'border-gray-100'
+              }`}
             >
-              <div className="text-2xl mb-1">{t.emoji}</div>
+              {/* Emoji stor */}
+              <div className="text-4xl mb-2">{t.emoji}</div>
+
+              {/* Titel */}
               <p className="font-black text-gray-800 text-sm">{t.label}</p>
-              <p className="text-gray-400 text-[10px] mb-2">{t.desc}</p>
+              <p className="text-gray-400 text-[10px] mb-3">{t.desc}</p>
 
               {/* Tilmeldte */}
               {signups.length > 0 ? (
-                <div className="flex flex-wrap gap-1 mb-2">
+                <div className="flex flex-wrap justify-center gap-1 mb-3">
                   {signups.map(s => (
-                    <span key={s.signup_id} className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                    <span key={s.signup_id} className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                       s.confirmed ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
                     }`}>
-                      {s.user_name?.split(' ')[0]}
-                      {s.confirmed ? ' ✓' : ''}
+                      {s.user_name?.split(' ')[0]}{s.confirmed ? ' ✓' : ''}
                     </span>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-300 text-[10px] mb-2 italic">Ingen har meldt sig endnu... vær den første! 🌟</p>
+                <p className="text-gray-300 text-[10px] mb-3 italic">Ingen endnu 🌟</p>
               )}
 
               {/* Knap */}
               {isMine ? (
                 <button
                   onClick={() => handleCancel(t.id)}
-                  className="w-full text-[11px] font-black py-1.5 rounded-xl bg-red-50 text-red-500 border border-red-200"
+                  className="w-full text-xs font-black py-2 rounded-2xl bg-red-50 text-red-400 border border-red-100"
                 >
-                  Jeg kan alligevel ikke 😅
+                  Afmeld 😅
                 </button>
               ) : (
                 <button
                   onClick={() => handleSignup(t.id)}
-                  className="w-full text-[11px] font-black py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/20"
+                  className="w-full text-xs font-black py-2 rounded-2xl bg-primary text-white shadow-sm"
                 >
                   Jeg tager den! 💪
                 </button>

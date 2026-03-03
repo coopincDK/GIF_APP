@@ -202,12 +202,13 @@ export default function SpinWheelPage() {
     if (!skipVolunteer) return
     setSaving(true)
     try {
-      await saveWheelResult([{ userId: skipVolunteer.id, taskType: 'tøjvask' }])
-      toast.success(`Tøjvask gemt til ${skipVolunteer.name || skipVolunteer.username}! ✅`)
+      const uid = skipVolunteer.user_id || skipVolunteer.id
+      await saveWheelResult([{ userId: uid, user_id: uid, taskType: 'laundry' }])
+      toast.success('Laast! ' + skipVolunteer.name + ' vasker troejer! ✅')
       setStep('select')
       setSkipVolunteer(null)
-    } catch {
-      toast.error('Kunne ikke gemme')
+    } catch (e) {
+      toast.error('Fejl: ' + (e?.response?.data?.error || e.message))
     } finally {
       setSaving(false)
     }
@@ -218,11 +219,14 @@ export default function SpinWheelPage() {
     if (result.length === 0) return
     setSaving(true)
     try {
-      await saveWheelResult([{ userId: result[0].id, taskType: 'tøjvask' }])
-      toast.success('Tøjvask gemt! ✅')
+      const winner = result[0]
+      const uid = winner.user_id || winner.id
+      await saveWheelResult([{ userId: uid, user_id: uid, taskType: 'laundry' }])
+      toast.success('Laast! ' + winner.name + ' vasker troejer! ✅')
       setResult([])
-    } catch {
-      toast.error('Kunne ikke gemme fordeling')
+      setStep('select')
+    } catch (e) {
+      toast.error('Fejl: ' + (e?.response?.data?.error || e.message))
     } finally {
       setSaving(false)
     }

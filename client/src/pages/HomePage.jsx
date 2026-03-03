@@ -14,6 +14,7 @@ import toast from 'react-hot-toast'
 import WeeklyAwardsDisplay from '../components/ui/WeeklyAwardsDisplay'
 import VolunteerBoard from '../components/ui/VolunteerBoard'
 import DailyFact from '../components/ui/DailyFact'
+import UpcomingMatch from '../components/ui/UpcomingMatch'
 
 const WEEKDAYS = ['søndag','mandag','tirsdag','onsdag','torsdag','fredag','lørdag']
 const MONTHS = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec']
@@ -70,9 +71,11 @@ export default function HomePage() {
     } catch { toast.error('Kunne ikke sende bytteforespørgsel') }
   }
 
-  const activeTasks = tasks.filter(t => t.status !== 'completed')
-  const swapTasks = tasks.filter(t => t.status === 'swap_requested' && t.assignedTo !== user?.id)
-  const completedCount = tasks.filter(t => t.status === 'completed').length
+  const myTasks     = tasks.filter(t => t.assigned_to === user?.user_id && !t.completion_date)
+  const activeTasks  = myTasks.filter(t => t.status !== 'completed')
+  // Swap-opgaver = opgaver fra ANDRE der har tilbudt bytte
+  const swapTasks    = tasks.filter(t => t.is_swap_offered && t.assigned_to !== user?.user_id && !t.completion_date)
+  const completedCount = tasks.filter(t => t.completion_date).length
 
   if (loading) return <LoadingSpinner message="Henter data..." />
 
@@ -127,6 +130,9 @@ export default function HomePage() {
       {/* Coach karakter */}
       <CoachCharacter />
 
+      {/* Næste kamp/træning */}
+      <UpcomingMatch />
+
       {/* Swap muligheder */}
       {swapTasks.length > 0 && (
         <section className="px-4 mt-4">
@@ -142,7 +148,7 @@ export default function HomePage() {
       )}
 
       {/* Mine opgaver */}
-      <section className="px-4 mt-4">
+      <section className="px-4 mt-7">
         <h3 className="font-black text-gray-800 mb-3 flex items-center gap-2 text-lg">
           📋 Mine opgaver
           {activeTasks.length > 0 && (
@@ -178,23 +184,24 @@ export default function HomePage() {
       <VolunteerBoard />
 
       {/* Hurtig navigation */}
-      <section className="px-4 mt-6">
-        <h3 className="font-black text-gray-800 mb-3 text-lg">🚀 Genveje</h3>
+      <section className="px-4 mt-8 mb-4">
+        <h3 className="font-black text-gray-800 mb-4 text-lg">🚀 Genveje</h3>
         <div className="grid grid-cols-2 gap-3">
           {[
-            { icon: '💎', label: 'Min Skattekiste', path: '/treasure', color: 'from-amber-400 to-amber-600' },
-            { icon: '🌟', label: 'Holdets Banner', path: '/team', color: 'from-primary to-primary-dark' },
-            { icon: '📚', label: "Trænerens Hjørne", path: '/coach', color: 'from-blue-500 to-blue-700' },
-            { icon: '🏆', label: 'Kattegat Cup', path: '/cup', color: active ? 'from-cup-blue to-cup-blue-dark' : 'from-gray-400 to-gray-600' },
-          ].map(({ icon, label, path, color }) => (
+            { icon: '💎', label: 'Min Skattekiste', sub: 'Dine badges', path: '/treasure', color: 'from-amber-400 to-orange-500' },
+            { icon: '🌟', label: 'Holdets Banner', sub: 'Se holdet', path: '/team', color: 'from-primary to-green-600' },
+            { icon: '📚', label: 'Trænerens Hjørne', sub: 'Regler & facts', path: '/coach', color: 'from-blue-500 to-indigo-600' },
+            { icon: '🏆', label: 'Kattegat Cup', sub: active ? 'I GANG! 🔥' : 'Kommer snart', path: '/cup', color: active ? 'from-yellow-500 to-orange-600' : 'from-gray-400 to-gray-500' },
+          ].map(({ icon, label, sub, path, color }) => (
             <motion.button
               key={path}
               whileTap={{ scale: 0.93 }}
               onClick={() => navigate(path)}
-              className={`bg-gradient-to-br ${color} text-white rounded-2xl p-4 text-left shadow-lg active:scale-95 transition-transform`}
+              className={`bg-gradient-to-br ${color} text-white rounded-3xl p-5 flex flex-col items-center text-center shadow-lg`}
             >
-              <span className="text-3xl block mb-2">{icon}</span>
+              <span className="text-4xl mb-2">{icon}</span>
               <span className="font-black text-sm leading-tight">{label}</span>
+              <span className="text-white/70 text-[11px] font-semibold mt-1">{sub}</span>
             </motion.button>
           ))}
         </div>

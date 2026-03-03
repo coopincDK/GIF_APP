@@ -130,3 +130,21 @@ CREATE TABLE IF NOT EXISTS volunteer_signups (
   created_at TEXT DEFAULT (datetime('now')),
   UNIQUE(user_id, volunteer_type, match_date)
 );
+
+-- Admin kladder / noter
+CREATE TABLE IF NOT EXISTS admin_notes (
+  note_id TEXT PRIMARY KEY,
+  team_id TEXT NOT NULL,
+  author_id TEXT NOT NULL,
+  title TEXT NOT NULL,
+  body TEXT,
+  created_at DATETIME DEFAULT (datetime('now')),
+  updated_at DATETIME DEFAULT (datetime('now'))
+);
+
+-- DBU KlubOffice cache
+CREATE TABLE IF NOT EXISTS dbu_cache (
+  cache_key TEXT PRIMARY KEY,
+  data TEXT NOT NULL,
+  fetched_at DATETIME DEFAULT (datetime('now'))
+);

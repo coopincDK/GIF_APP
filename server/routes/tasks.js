@@ -19,6 +19,46 @@ async function awardBadgeForTask(db, userId, taskTitle) {
   return null;
 }
 
+// GET /api/tasks/my — opgaver tildelt til den loggede bruger + åbne swap-tilbud
+router.get('/my', authenticateToken, async (req, res) => {
+  try {
+    const db = getDb();
+    // Mine egne opgaver
+    const mine = (await db.execute({
+      sql: `SELECT t.*, ta.user_id as assigned_to, ta.assignment_id, ta.is_swap_offered,
+              u.name as assigned_to_name, ta.completion_date
+            FROM tasks t
+            JOIN task_assignments ta ON t.task_id = ta.task_id
+            JOIN users u ON ta.user_id = u.user_id
+            WHERE t.team_id = ? AND ta.user_id = ? AND ta.completion_date IS NULL
+            ORDER BY t.created_at DESC`,
+      args: [req.user.team_id, req.user.user_id]
+    })).rows;
+    // Åbne swap-tilbud fra andre (som jeg kan overtage)
+    const swaps = (await db.execute({
+      sql: `SELECT t.*, ta.user_id as assigned_to, ta.assignment_id, ta.is_swap_offered,
+              u.name as assigned_to_name, ta.completion_date
+            FROM tasks t
+            JOIN task_assignments ta ON t.task_id = ta.task_id
+            JOIN users u ON ta.user_id = u.user_id
+            WHERE t.team_id = ? AND ta.is_swap_offered = 1
+              AND ta.user_id != ? AND ta.completion_date IS NULL`,
+      args: [req.user.team_id, req.user.user_id]
+    })).rows;
+    // Kombiner og deduplikér
+    const seen = new Set();
+    const all = [...mine, ...swaps].filter(t => {
+      if (seen.has(t.task_id)) return false;
+      seen.add(t.task_id);
+      return true;
+    });
+    res.json(all);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
 // GET /api/tasks
 router.get('/', authenticateToken, async (req, res) => {
   try {
@@ -251,6 +291,38 @@ router.get('/laundry-counts', authenticateToken, async (req, res) => {
     });
 
     res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+// POST /api/tasks/spin/save  (alias for /spin/confirm)
+router.post('/spin/save', authenticateToken, adminOnly, async (req, res) => {
+  try {
+    const { assignments } = req.body;
+    if (!assignments || !Array.isArray(assignments))
+      return res.status(400).json({ error: 'assignments array p\u00e5kr\u00e6vet' });
+    const db = getDb();
+    for (const { userId, user_id, taskType } of assignments) {
+      const uid = userId || user_id;
+      // Find eller opret t\u00f8jvask-opgave
+      let task = (await db.execute({
+        sql: `SELECT task_id FROM tasks WHERE team_id = ? AND title LIKE '%\u00f8jvask%' AND status = 'open' LIMIT 1`,
+        args: [req.user.team_id]
+      })).rows[0];
+      if (!task) {
+        const tid = uuidv4();
+        await db.execute({
+          sql: `INSERT INTO tasks (task_id, title, description, type, status, team_id) VALUES (?, 'T\u00f8jvask', 'Vask holdets tr\u00f8jer', 'liga', 'open', ?)`,
+          args: [tid, req.user.team_id]
+        });
+        task = { task_id: tid };
+      }
+      await db.execute({ sql: 'INSERT INTO task_assignments (assignment_id, task_id, user_id) VALUES (?, ?, ?)', args: [uuidv4(), task.task_id, uid] });
+      await db.execute({ sql: `UPDATE tasks SET status = 'assigned' WHERE task_id = ?`, args: [task.task_id] });
+    }
+    res.json({ message: 'T\u00f8jvask gemt! \u2705' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Serverfejl' });

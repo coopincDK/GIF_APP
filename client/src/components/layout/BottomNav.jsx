@@ -91,6 +91,7 @@ export default function BottomNav() {
           {isAdmin && (
             <NavBtn path="/spin" icon="🎡" label="Hjul" onClick={() => navigate('/spin')} isActive={isActive('/spin')} active={active} />
           )}
+          <NavBtn path="/schedule" icon="📅" label="Program" onClick={() => navigate('/schedule')} isActive={isActive('/schedule')} active={active} />
           <NavBtn path="/treasure" icon="💎" label="Skattekiste" onClick={() => navigate('/treasure')} isActive={isActive('/treasure')} active={active} />
           <NavBtn path="/team" icon="🌟" label="Hold" onClick={() => navigate('/team')} isActive={isActive('/team')} active={active} />
           <NavBtn path="/profile" icon="👤" label="Profil" onClick={() => navigate('/profile')} isActive={isActive('/profile')} active={active} />

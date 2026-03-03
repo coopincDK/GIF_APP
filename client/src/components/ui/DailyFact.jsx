@@ -11,15 +11,14 @@ const FALLBACK_FACTS = [
   { title: 'Fodbold og venskab 🤝', body_text: 'Studier viser at børn der spiller holdsport som fodbold har 40% bedre sociale færdigheder. Fodbold gør dig bedre til at samarbejde!' },
 ]
 
-const TRAINER_PHRASES = [
-  'Træner Bjarke siger:',
-  'Vidste du at...',
-  'Dagens fodbold-fact:',
-  'Trænerens tip:',
-  'Fun fact fra banen:',
-  'Bjarke siger:',
-  'Husk dette:',
-  'Fodbold-nørd alert 🤓:',
+const TRAINERS = [
+  { img: '/assets/coaches/bsj/bsj_01_coaching.png',    label: 'Bjarke siger:' },
+  { img: '/assets/coaches/ag/ag_01_coaching.png',       label: 'Adam siger:' },
+  { img: '/assets/coaches/bsj/bsj_04_teamtalk.png',    label: 'Bjarke fortæller:' },
+  { img: '/assets/coaches/ag/ag_03_tactics.png',        label: 'Adam ved det:' },
+  { img: '/assets/coaches/bsj/bsj_02_celebrating.png', label: 'Vidste du at...' },
+  { img: '/assets/coaches/ag/ag_02_celebrating.png',   label: 'Fun fact!' },
+  { img: '/assets/stickers/19_traener.png',             label: 'Trænerens tip:' },
 ]
 
 function getDailyIndex(length) {
@@ -48,7 +47,7 @@ export default function DailyFact() {
   }, [])
 
   const fact = facts[currentIdx] || facts[0]
-  const trainerPhrase = TRAINER_PHRASES[getDailyIndex(TRAINER_PHRASES.length)]
+  const trainer = TRAINERS[getDailyIndex(TRAINERS.length)]
 
   const nextFact = () => {
     setFlipped(true)
@@ -78,11 +77,13 @@ export default function DailyFact() {
         >
           {/* Træner-avatar + label */}
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-lg flex-shrink-0">
-              👨‍🏫
-            </div>
+            <img
+              src={trainer.img}
+              alt="Træner"
+              className="w-10 h-10 rounded-full object-cover object-top border-2 border-primary/30 flex-shrink-0 bg-white shadow-sm"
+            />
             <span className="text-xs font-black text-primary uppercase tracking-wide">
-              {trainerPhrase}
+              {trainer.label}
             </span>
           </div>
 

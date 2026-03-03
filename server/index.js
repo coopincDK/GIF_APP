@@ -4,6 +4,8 @@ const cors = require('cors');
 const path = require('path');
 const { initDb } = require('./db/database');
 const { seed } = require('./db/seed');
+const scheduleRouter = require('./routes/schedule');
+const { startDbuSync } = require('./services/dbuSync');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -48,6 +50,9 @@ app.use('/api/cup',     require('./routes/cup'));
 app.use('/api/admin',      require('./routes/admin'));
 app.use('/api/awards',     require('./routes/awards'));
 app.use('/api/volunteers', require('./routes/volunteers'));
+app.use('/api/notes',      require('./routes/notes'));
+app.use('/api/history',   require('./routes/history'));
+app.use('/api/schedule',  scheduleRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
@@ -76,6 +81,7 @@ async function start() {
       console.log(`   → API:    http://localhost:${PORT}/api`);
       console.log(`   → Health: http://localhost:${PORT}/api/health`);
       console.log(`   → CORS:   ${process.env.CLIENT_URL || 'http://localhost:5173'}\n`);
+      startDbuSync();
     });
   } catch (err) {
     console.error('❌ Kunne ikke starte server:', err);

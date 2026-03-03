@@ -17,6 +17,8 @@ import {
 } from '../api/admin'
 import { getRules, getFacts, createRule, deleteRule, createFact, deleteFact } from '../api/content'
 import { getUsers } from '../api/users'
+import AdminNotesTab from './admin/AdminNotesTab'
+import AdminHistoryTab from './admin/AdminHistoryTab'
 
 const TABS = [
   { id: 'settings', label: '⚙️ Indstillinger' },
@@ -25,6 +27,8 @@ const TABS = [
   { id: 'badges', label: '🏅 Badges' },
   { id: 'shifts', label: '🏆 Cup-Vagter' },
   { id: 'content', label: '📚 Indhold' },
+  { id: 'notes', label: '📝 Kladde' },
+  { id: 'history', label: '📊 Historik' },
 ]
 
 // ─── Cup-Mode Override Selector ───────────────────────────────────────────────
@@ -523,6 +527,8 @@ export default function AdminPage() {
             {activeTab === 'badges' && <BadgesTab />}
             {activeTab === 'shifts' && <CupShiftsTab />}
             {activeTab === 'content' && <ContentTab />}
+            {activeTab === 'notes' && <AdminNotesTab />}
+            {activeTab === 'history' && <AdminHistoryTab />}
           </motion.div>
         </AnimatePresence>
       </div>
