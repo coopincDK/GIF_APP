@@ -1,0 +1,211 @@
+const express = require('express');
+const { v4: uuidv4 } = require('uuid');
+const { getDb } = require('../db/database');
+const { authenticateToken } = require('../middleware/auth');
+const { adminOnly } = require('../middleware/adminOnly');
+
+const router = express.Router();
+
+async function awardBadgeForTask(db, userId, taskTitle) {
+  const badgeMap = { 'Tøjvask': 'Hold-Helt', 'Frugt med': 'Frugt-Helt', 'Kage med': 'Kage-Helt' };
+  const badgeName = badgeMap[taskTitle] || 'Hold-Helt';
+  const badge = (await db.execute({ sql: 'SELECT * FROM badges WHERE name = ?', args: [badgeName] })).rows[0];
+  if (!badge) return null;
+  const has = (await db.execute({ sql: 'SELECT 1 FROM user_badges WHERE user_id = ? AND badge_id = ?', args: [userId, badge.badge_id] })).rows[0];
+  if (!has) {
+    await db.execute({ sql: 'INSERT INTO user_badges (user_badge_id, user_id, badge_id) VALUES (?, ?, ?)', args: [uuidv4(), userId, badge.badge_id] });
+    return badge;
+  }
+  return null;
+}
+
+// GET /api/tasks
+router.get('/', authenticateToken, async (req, res) => {
+  try {
+    const db = getDb();
+    const tasks = (await db.execute({
+      sql: `SELECT t.*, ta.user_id as assigned_to, ta.assignment_id, ta.is_swap_offered,
+              u.name as assigned_to_name, ta.completion_date
+            FROM tasks t
+            LEFT JOIN task_assignments ta ON t.task_id = ta.task_id AND ta.completion_date IS NULL
+            LEFT JOIN users u ON ta.user_id = u.user_id
+            WHERE t.team_id = ? ORDER BY t.created_at DESC`,
+      args: [req.user.team_id]
+    })).rows;
+    res.json(tasks);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+// POST /api/tasks  (admin only)
+router.post('/', authenticateToken, adminOnly, async (req, res) => {
+  try {
+    const { title, description, type, due_date } = req.body;
+    if (!title) return res.status(400).json({ error: 'Titel er påkrævet' });
+    const db = getDb();
+    const taskId = uuidv4();
+    await db.execute({
+      sql: `INSERT INTO tasks (task_id, title, description, type, due_date, status, team_id) VALUES (?, ?, ?, ?, ?, 'open', ?)`,
+      args: [taskId, title, description || null, type || 'liga', due_date || null, req.user.team_id]
+    });
+    const task = (await db.execute({ sql: 'SELECT * FROM tasks WHERE task_id = ?', args: [taskId] })).rows[0];
+    res.status(201).json(task);
+  } catch (err) {
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+// DELETE /api/tasks/:id  (admin only)
+router.delete('/:id', authenticateToken, adminOnly, async (req, res) => {
+  try {
+    const db = getDb();
+    await db.execute({ sql: 'DELETE FROM task_assignments WHERE task_id = ?', args: [req.params.id] });
+    await db.execute({ sql: 'DELETE FROM tasks WHERE task_id = ?', args: [req.params.id] });
+    res.json({ message: 'Opgave slettet' });
+  } catch (err) {
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+// POST /api/tasks/:id/complete
+router.post('/:id/complete', authenticateToken, async (req, res) => {
+  try {
+    const db = getDb();
+    const assignment = (await db.execute({
+      sql: `SELECT ta.*, t.title FROM task_assignments ta
+            JOIN tasks t ON ta.task_id = t.task_id
+            WHERE ta.task_id = ? AND ta.user_id = ? AND ta.completion_date IS NULL`,
+      args: [req.params.id, req.user.user_id]
+    })).rows[0];
+
+    if (!assignment) return res.status(404).json({ error: 'Opgave ikke fundet eller ikke tildelt dig' });
+
+    await db.execute({ sql: `UPDATE task_assignments SET completion_date = datetime('now') WHERE assignment_id = ?`, args: [assignment.assignment_id] });
+    await db.execute({ sql: `UPDATE tasks SET status = 'completed' WHERE task_id = ?`, args: [req.params.id] });
+
+    const newBadge = await awardBadgeForTask(db, req.user.user_id, assignment.title);
+    res.json({ message: 'Opgave fuldført! 🎉', new_badge: newBadge });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+// POST /api/tasks/spin  (admin only)
+router.post('/spin', authenticateToken, adminOnly, async (req, res) => {
+  try {
+    const db = getDb();
+    const openTasks = (await db.execute({
+      sql: `SELECT t.* FROM tasks t
+            LEFT JOIN task_assignments ta ON t.task_id = ta.task_id AND ta.completion_date IS NULL
+            WHERE t.team_id = ? AND t.type = 'liga' AND t.status = 'open' AND ta.assignment_id IS NULL`,
+      args: [req.user.team_id]
+    })).rows;
+
+    if (openTasks.length === 0) return res.status(400).json({ error: 'Ingen åbne opgaver at fordele' });
+
+    const users = (await db.execute({
+      sql: `SELECT u.user_id, u.name, COUNT(ta.assignment_id) as task_count
+            FROM users u
+            LEFT JOIN task_assignments ta ON u.user_id = ta.user_id AND ta.completion_date IS NULL
+            WHERE u.team_id = ? AND u.role = 'user'
+            GROUP BY u.user_id ORDER BY task_count ASC`,
+      args: [req.user.team_id]
+    })).rows;
+
+    if (users.length === 0) return res.status(400).json({ error: 'Ingen brugere på holdet endnu' });
+
+    const results = [];
+    const usedIds = new Set();
+
+    for (const task of openTasks.slice(0, 3)) {
+      const available = users.filter(u => !usedIds.has(u.user_id));
+      if (available.length === 0) break;
+      const pool = available.slice(0, Math.max(1, Math.ceil(available.length / 2)));
+      const chosen = pool[Math.floor(Math.random() * pool.length)];
+      usedIds.add(chosen.user_id);
+      results.push({
+        task: { task_id: task.task_id, title: task.title, description: task.description },
+        user: { user_id: chosen.user_id, name: chosen.name },
+      });
+    }
+
+    res.json({ results, message: 'Hjulet har talt! 🎡' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+// POST /api/tasks/spin/confirm  (admin only)
+router.post('/spin/confirm', authenticateToken, adminOnly, async (req, res) => {
+  try {
+    const { assignments } = req.body;
+    if (!assignments || !Array.isArray(assignments))
+      return res.status(400).json({ error: 'assignments array påkrævet' });
+
+    const db = getDb();
+    for (const { task_id, user_id } of assignments) {
+      await db.execute({ sql: 'INSERT INTO task_assignments (assignment_id, task_id, user_id) VALUES (?, ?, ?)', args: [uuidv4(), task_id, user_id] });
+      await db.execute({ sql: `UPDATE tasks SET status = 'assigned' WHERE task_id = ?`, args: [task_id] });
+    }
+    res.json({ message: 'Opgaver fordelt! 🎉', count: assignments.length });
+  } catch (err) {
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+// POST /api/tasks/:id/offer-swap
+router.post('/:id/offer-swap', authenticateToken, async (req, res) => {
+  try {
+    const db = getDb();
+    const assignment = (await db.execute({
+      sql: 'SELECT * FROM task_assignments WHERE task_id = ? AND user_id = ? AND completion_date IS NULL',
+      args: [req.params.id, req.user.user_id]
+    })).rows[0];
+    if (!assignment) return res.status(404).json({ error: 'Opgave ikke fundet' });
+    await db.execute({ sql: 'UPDATE task_assignments SET is_swap_offered = 1 WHERE assignment_id = ?', args: [assignment.assignment_id] });
+    res.json({ message: 'Swap tilbudt! Andre kan nu overtage opgaven 🔄' });
+  } catch (err) {
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+// POST /api/tasks/:id/accept-swap
+router.post('/:id/accept-swap', authenticateToken, async (req, res) => {
+  try {
+    const db = getDb();
+    const assignment = (await db.execute({
+      sql: 'SELECT * FROM task_assignments WHERE task_id = ? AND is_swap_offered = 1 AND completion_date IS NULL',
+      args: [req.params.id]
+    })).rows[0];
+    if (!assignment) return res.status(404).json({ error: 'Ingen swap tilgængelig' });
+    if (assignment.user_id === req.user.user_id) return res.status(400).json({ error: 'Du kan ikke overtage din egen opgave' });
+    await db.execute({ sql: 'UPDATE task_assignments SET user_id = ?, is_swap_offered = 0 WHERE assignment_id = ?', args: [req.user.user_id, assignment.assignment_id] });
+    res.json({ message: 'Du har overtaget opgaven! 💪' });
+  } catch (err) {
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+// GET /api/tasks/swaps/open
+router.get('/swaps/open', authenticateToken, async (req, res) => {
+  try {
+    const db = getDb();
+    const swaps = (await db.execute({
+      sql: `SELECT t.*, ta.assignment_id, ta.user_id as current_user_id, u.name as current_user_name
+            FROM tasks t
+            JOIN task_assignments ta ON t.task_id = ta.task_id
+            JOIN users u ON ta.user_id = u.user_id
+            WHERE t.team_id = ? AND ta.is_swap_offered = 1 AND ta.completion_date IS NULL`,
+      args: [req.user.team_id]
+    })).rows;
+    res.json(swaps);
+  } catch (err) {
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+module.exports = router;
