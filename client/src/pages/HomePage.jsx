@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import AppShell from '../components/layout/AppShell'
 import CoachCharacter from '../components/ui/CoachCharacter'
 import StatsCard from '../components/ui/StatsCard'
 import TaskCard from '../components/ui/TaskCard'
@@ -65,7 +64,7 @@ export default function HomePage() {
   if (loading) return <LoadingSpinner message="Henter data..." />
 
   return (
-    <AppShell>
+    <div>
       {/* Cup nedtælling banner */}
       {active && <CupCountdown />}
 
@@ -152,6 +151,6 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-    </AppShell>
+    </div>
   )
 }

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
-import AppShell from '../components/layout/AppShell'
 import SpinWheel from '../components/wheel/SpinWheel'
 import SpinResult from '../components/wheel/SpinResult'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
@@ -60,7 +59,7 @@ export default function SpinWheelPage() {
   if (loading) return <LoadingSpinner message="Henter spillere..." />
 
   return (
-    <AppShell title="Opgave-Hjulet">
+    <div>
       <div className="px-4 py-4 space-y-6">
         {/* Header */}
         <motion.div
@@ -105,6 +104,6 @@ export default function SpinWheelPage() {
           </div>
         </div>
       </div>
-    </AppShell>
+    </div>
   )
 }

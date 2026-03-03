@@ -1,8 +1,10 @@
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useCupMode } from '../../hooks/useCupMode'
 
-export default function TopBar({ title }) {
+export default function TopBar() {
   const { active } = useCupMode()
+  const navigate = useNavigate()
 
   return (
     <motion.header
@@ -12,23 +14,26 @@ export default function TopBar({ title }) {
         active ? 'cup-gradient' : 'animated-gradient'
       }`}
     >
-      <div className="flex items-center gap-2">
+      {/* Logo + titel — klikbar hjem */}
+      <button
+        onClick={() => navigate('/')}
+        className="flex items-center gap-2 active:opacity-70 transition-opacity"
+      >
         <img
           src="/assets/logo.jpg"
           alt="GIF Logo"
           className="w-9 h-9 rounded-full object-cover border-2 border-white/50 shadow"
           onError={(e) => { e.target.style.display = 'none' }}
         />
-        <div>
+        <div className="text-left">
           <h1 className={`font-black text-base leading-tight ${active ? 'text-yellow-300' : 'text-white'}`}>
             {active ? '🏆 Kattegat Cup' : 'GIF Hold-Helte'}
           </h1>
-          {title && (
-            <p className="text-white/80 text-xs font-semibold">{title}</p>
-          )}
+          <p className="text-white/70 text-xs font-semibold">Grenå IF U10/U11</p>
         </div>
-      </div>
+      </button>
 
+      {/* Højre side */}
       <div className="flex items-center gap-2">
         {active && (
           <motion.div

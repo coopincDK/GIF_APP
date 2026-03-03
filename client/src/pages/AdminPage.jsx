@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Trash2, Link as LinkIcon, Award, Settings } from 'lucide-react'
 import toast from 'react-hot-toast'
-import AppShell from '../components/layout/AppShell'
 import ConfirmModal from '../components/ui/ConfirmModal'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
 import { InlineSpinner } from '../components/ui/LoadingSpinner'
@@ -445,7 +444,7 @@ export default function AdminPage() {
   if (!isAdmin) return null
 
   return (
-    <AppShell title="Admin Panel">
+    <div>
       <div className="py-4">
         {/* Header */}
         <div className="px-4 mb-4">
@@ -527,7 +526,7 @@ export default function AdminPage() {
           </motion.div>
         </AnimatePresence>
       </div>
-    </AppShell>
+    </div>
   )
 }
 

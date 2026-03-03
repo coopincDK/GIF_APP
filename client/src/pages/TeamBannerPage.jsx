@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import AppShell from '../components/layout/AppShell'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
 import { getTeamBadges } from '../api/badges'
 
@@ -29,7 +28,7 @@ export default function TeamBannerPage() {
   if (loading) return <LoadingSpinner message="Henter hold-banner..." />
 
   return (
-    <AppShell title="Holdets Super-Banner">
+    <div>
       <div className="px-4 py-4">
         {/* Header */}
         <motion.div
@@ -130,6 +129,6 @@ export default function TeamBannerPage() {
           </div>
         )}
       </div>
-    </AppShell>
+    </div>
   )
 }

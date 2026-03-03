@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import AppShell from '../components/layout/AppShell'
 import Badge from '../components/ui/Badge'
 import BadgeUnlock from '../components/ui/BadgeUnlock'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
@@ -41,7 +40,7 @@ export default function TreasurePage() {
   if (loading) return <LoadingSpinner message="Henter skattekiste..." />
 
   return (
-    <AppShell title="Min Skattekiste">
+    <div>
       {newBadge && <BadgeUnlock badge={newBadge} onClose={() => setNewBadge(null)} />}
 
       <div className="px-4 py-4">
@@ -114,6 +113,6 @@ export default function TreasurePage() {
           </div>
         )}
       </div>
-    </AppShell>
+    </div>
   )
 }
