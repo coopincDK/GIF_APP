@@ -187,13 +187,46 @@ router.post('/spin/confirm', authenticateToken, adminOnly, async (req, res) => {
       return res.status(400).json({ error: 'assignments array påkrævet' });
 
     const db = getDb();
-    for (const { task_id, user_id } of assignments) {
-      await db.execute({ sql: 'INSERT INTO task_assignments (assignment_id, task_id, user_id) VALUES (?, ?, ?)', args: [uuidv4(), task_id, user_id] });
-      await db.execute({ sql: `UPDATE tasks SET status = 'assigned' WHERE task_id = ?`, args: [task_id] });
+    for (const assignment of assignments) {
+      let { task_id, user_id, userId, taskType } = assignment;
+      // Normaliser user_id (frontend sender både userId og user_id)
+      user_id = user_id || userId;
+      if (!user_id) continue;
+
+      // Hvis ingen task_id: find eller opret en tøjvask-opgave
+      if (!task_id) {
+        const type = taskType || 'tøjvask';
+        // Find eksisterende åben opgave af denne type
+        const existing = (await db.execute({
+          sql: `SELECT task_id FROM tasks WHERE type = ? AND status = 'pending' LIMIT 1`,
+          args: [type]
+        })).rows[0];
+
+        if (existing) {
+          task_id = existing.task_id;
+        } else {
+          // Opret ny opgave automatisk
+          task_id = uuidv4();
+          await db.execute({
+            sql: `INSERT INTO tasks (task_id, title, description, type, status) VALUES (?, ?, ?, ?, 'pending')`,
+            args: [task_id, 'Tøjvask', 'Vask og tør trøjer efter kamp', type]
+          });
+        }
+      }
+
+      await db.execute({
+        sql: 'INSERT INTO task_assignments (assignment_id, task_id, user_id) VALUES (?, ?, ?)',
+        args: [uuidv4(), task_id, user_id]
+      });
+      await db.execute({
+        sql: `UPDATE tasks SET status = 'assigned' WHERE task_id = ?`,
+        args: [task_id]
+      });
     }
     res.json({ message: 'Opgaver fordelt! 🎉', count: assignments.length });
   } catch (err) {
-    res.status(500).json({ error: 'Serverfejl' });
+    console.error('spin/confirm fejl:', err);
+    res.status(500).json({ error: err.message || 'Serverfejl' });
   }
 });
 

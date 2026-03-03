@@ -59,11 +59,7 @@ export default function DailyFact() {
     : TRAINERS[getDailyIndex(TRAINERS.length)]
 
   const nextFact = () => {
-    setFlipped(true)
-    setTimeout(() => {
-      setCurrentIdx((prev) => (prev + 1) % facts.length)
-      setFlipped(false)
-    }, 200)
+    setCurrentIdx((prev) => (prev + 1) % facts.length)
   }
 
   return (
