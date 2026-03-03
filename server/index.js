@@ -6,6 +6,8 @@ const { initDb } = require('./db/database');
 const { seed } = require('./db/seed');
 const scheduleRouter = require('./routes/schedule');
 const { startDbuSync } = require('./services/dbuSync');
+const footballRouter = require('./routes/football');
+const { startFootballSync } = require('./services/footballSync');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -53,6 +55,7 @@ app.use('/api/volunteers', require('./routes/volunteers'));
 app.use('/api/notes',      require('./routes/notes'));
 app.use('/api/history',   require('./routes/history'));
 app.use('/api/schedule',  scheduleRouter);
+app.use('/api/football', footballRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
@@ -82,6 +85,7 @@ async function start() {
       console.log(`   → Health: http://localhost:${PORT}/api/health`);
       console.log(`   → CORS:   ${process.env.CLIENT_URL || 'http://localhost:5173'}\n`);
       startDbuSync();
+      startFootballSync();
     });
   } catch (err) {
     console.error('❌ Kunne ikke starte server:', err);

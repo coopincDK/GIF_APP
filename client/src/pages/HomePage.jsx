@@ -14,6 +14,7 @@ import toast from 'react-hot-toast'
 import WeeklyAwardsDisplay from '../components/ui/WeeklyAwardsDisplay'
 import VolunteerBoard from '../components/ui/VolunteerBoard'
 import DailyFact from '../components/ui/DailyFact'
+import SuperligaWidget from '../components/ui/SuperligaWidget'
 import UpcomingMatch from '../components/ui/UpcomingMatch'
 
 const WEEKDAYS = ['søndag','mandag','tirsdag','onsdag','torsdag','fredag','lørdag']
@@ -176,6 +177,9 @@ export default function HomePage() {
 
       {/* Dagens Fact */}
       <DailyFact />
+
+      {/* Superliga */}
+      <SuperligaWidget />
 
       {/* Ugens Helte */}
       <WeeklyAwardsDisplay />
