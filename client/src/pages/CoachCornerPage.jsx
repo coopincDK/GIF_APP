@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { getContent } from '../api/content'
+import { getRules, getFacts } from '../api/content'
 
 const FALLBACK_REGLER = [
   { content_id: '1', title: 'Mødepligt', body_text: 'Alle spillere møder op 15 minutter før kampstart. Vis respekt for holdkammeraterne ved at være til tiden.' },
@@ -29,8 +29,8 @@ export default function CoachCornerPage() {
   const [expanded, setExpanded] = useState(null)
 
   useEffect(() => {
-    getContent('regel').then(({ data }) => { if (data?.length) setRegler(data) }).catch(() => {})
-    getContent('fact').then(({ data }) => { if (data?.length) setFacts(data) }).catch(() => {})
+    getRules().then(({ data }) => { if (data?.length) setRegler(data) }).catch(() => {})
+    getFacts().then(({ data }) => { if (data?.length) setFacts(data) }).catch(() => {})
   }, [])
 
   const items = tab === 'regler' ? regler : facts
