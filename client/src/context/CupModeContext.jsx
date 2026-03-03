@@ -34,8 +34,8 @@ export function CupModeProvider({ children }) {
       setOverride(ov)
       setActive(determineActive(ov))
     } catch {
-      // Fallback til lokal beregning
-      setActive(determineActive(override))
+      // Fallback til lokal beregning — ingen crash, ingen re-render loop
+      setActive(new Date() >= AUTO_ACTIVATE_DATE)
     } finally {
       setLoading(false)
     }
