@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { getFacts } from '../../api/content'
+import { getFacts, getJokes } from '../../api/content'
 
 // Fallback facts hvis API fejler
 const FALLBACK_FACTS = [
@@ -21,6 +21,12 @@ const TRAINERS = [
   { img: '/assets/stickers/19_traener.png',             label: 'Trænerens tip:' },
 ]
 
+const JOKE_TRAINERS = [
+  { img: '/assets/coaches/bsj/bsj_02_celebrating.png', label: 'Bjarke griner:' },
+  { img: '/assets/coaches/ag/ag_02_celebrating.png',   label: 'Adam griner:' },
+  { img: '/assets/stickers/19_traener.png',             label: 'Hør den her! 😂' },
+]
+
 function getDailyIndex(length) {
   const day = Math.floor(Date.now() / 86400000)
   return day % length
@@ -29,25 +35,28 @@ function getDailyIndex(length) {
 export default function DailyFact() {
   const [facts, setFacts] = useState(FALLBACK_FACTS)
   const [currentIdx, setCurrentIdx] = useState(0)
-  const [flipped, setFlipped] = useState(false)
 
   useEffect(() => {
-    getFacts()
-      .then(({ data }) => {
-        if (data?.length) {
-          setFacts(data)
-          setCurrentIdx(getDailyIndex(data.length))
+    // Hent både facts og jokes og bland dem
+    Promise.allSettled([getFacts(), getJokes()])
+      .then(([factsRes, jokesRes]) => {
+        const f = factsRes.status === 'fulfilled' ? (factsRes.value.data || []) : []
+        const j = jokesRes.status === 'fulfilled' ? (jokesRes.value.data || []) : []
+        const combined = [...f, ...j]
+        if (combined.length > 0) {
+          setFacts(combined)
+          setCurrentIdx(getDailyIndex(combined.length))
         } else {
           setCurrentIdx(getDailyIndex(FALLBACK_FACTS.length))
         }
       })
-      .catch(() => {
-        setCurrentIdx(getDailyIndex(FALLBACK_FACTS.length))
-      })
   }, [])
 
-  const fact = facts[currentIdx] || facts[0]
-  const trainer = TRAINERS[getDailyIndex(TRAINERS.length)]
+  const fact    = facts[currentIdx] || facts[0]
+  const isJoke  = fact?.type === 'joke'
+  const trainer = isJoke
+    ? JOKE_TRAINERS[getDailyIndex(JOKE_TRAINERS.length)]
+    : TRAINERS[getDailyIndex(TRAINERS.length)]
 
   const nextFact = () => {
     setFlipped(true)
@@ -60,7 +69,7 @@ export default function DailyFact() {
   return (
     <section className="px-4 mt-5">
       <div className="flex items-center justify-between mb-2">
-        <h2 className="text-lg font-black text-gray-800">💡 Vidste du det her?</h2>
+        <h2 className="text-lg font-black text-gray-800">{isJoke ? '😂 Dagens vittighed!' : '💡 Vidste du det her?'}</h2>
         <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
           {currentIdx + 1}/{facts.length}
         </span>
@@ -73,7 +82,7 @@ export default function DailyFact() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
-          className="bg-gradient-to-br from-primary/5 to-green-50 border-2 border-primary/20 rounded-3xl p-4 shadow-sm"
+          className={`rounded-3xl p-4 shadow-sm border-2 ${isJoke ? 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200' : 'bg-gradient-to-br from-primary/5 to-green-50 border-primary/20'}`}
         >
           {/* Træner-avatar + label */}
           <div className="flex items-center gap-2 mb-3">
@@ -92,8 +101,8 @@ export default function DailyFact() {
             {fact.title}
           </h3>
 
-          {/* Fact tekst */}
-          <p className="text-gray-600 font-semibold text-sm leading-relaxed">
+          {/* Tekst — jokes vises med whitespace-pre-wrap for linjeskift */}
+          <p className={`text-gray-600 font-semibold text-sm leading-relaxed ${isJoke ? 'whitespace-pre-wrap' : ''}`}>
             {fact.body_text}
           </p>
 
@@ -102,7 +111,7 @@ export default function DailyFact() {
             onClick={nextFact}
             className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-2xl bg-primary/10 text-primary font-black text-sm active:scale-95 transition-transform"
           >
-            🎲 Giv mig en til!
+            {isJoke ? '😂 Hør en til!' : '🎲 Giv mig en til!'}
           </button>
         </motion.div>
       </AnimatePresence>

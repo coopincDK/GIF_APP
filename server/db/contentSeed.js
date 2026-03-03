@@ -54,6 +54,21 @@ const FACTS = [
   { title: 'Verdens mindste fodboldland ⚽',  sort_order: 30, body_text: 'San Marino er et af verdens mindste fodboldlande med kun 34.000 indbyggere — men de har et nationalt fodboldhold og spiller i UEFA-kvalifikation!' },
 ];
 
+const JOKES = [
+  { title: 'Forlænget spilletid ⏰',    sort_order: 1,  body_text: 'Læreren: Ole, hvorfor kommer du for sent?\nOle: Jeg drømte om en fodboldkamp!\nLæreren: Kommer du for sent på grund af den?\nOle: Ja, der var forlænget spilletid!' },
+  { title: 'Gravesen og dommeren 🟥', sort_order: 2,  body_text: 'Gravesen til dommeren: „Hvad vil du gøre, hvis jeg kalder dig en idiot?“\n„Jeg vil vise dig ud omgående.“\n„Og hvad så, hvis jeg tænker det?“\n„Ja, du må tænke, hvad du vil.“\n„Godt, så tænker jeg bare, at du er en kæmpe idiot!“' },
+  { title: 'Fodbold med hunde 🐶',    sort_order: 3,  body_text: 'Hvorfor skal man ikke spille fodbold med hunde?\n\nDe fælder!' },
+  { title: 'Hvad er en målvogter? 🧔', sort_order: 4,  body_text: 'Hvad kalder man en fodboldspiller, der ikke kan løbe?\n\nEn målmand.' },
+  { title: 'Frispark i sengen 🛌',    sort_order: 5,  body_text: 'En mand og kone lå i sengen og så fodboldkamp. Manden slap en lille vind og sagde: „Det var et frispark!“\nLidt efter svarede konen med en vind: „Det var en udligning!“\nSå slap manden en ordenlig en — manden smilede: „Det er halvleg, så nu skal vi bytte side!“' },
+  { title: 'VM-finalen 🏆',            sort_order: 6,  body_text: 'En mand sidder ved et tomt sæde i VM-finalen. Naboen spørger: „Hvem er så skør at købe billet uden at komme?“\n„Det er min kones plads. Hun er lige død. Første kamp vi ikke ser sammen siden vi blev gift.“\n„Kunne en ven ikke komme?“\n„Næh, de er med til begravelsen.“' },
+  { title: 'Bryllupsdagen 💍',         sort_order: 7,  body_text: '„Du kan ikke engang huske hvornår vi har bryllupsdag!“\n„Selvfølgelig kan jeg det. Det var dengang vi slog Sovjet 4-2.“' },
+  { title: 'Trænerens besked 📣',    sort_order: 8,  body_text: 'Fodboldtræneren til sine spillere:\n„Jeg sagde jo, at I skulle gå ud at spille, som I aldrig havde spillet før.\nIkke at I skulle gå ud at spille, som om I aldrig havde spillet før!“' },
+  { title: 'Fodboldspillere og ludo 🎲', sort_order: 9,  body_text: 'Hvorfor spiller fodboldfans ikke ludo?\n\nFordi de kan ikke lide at flytte brikker.' },
+  { title: 'Huller i nettet 🤔',       sort_order: 10, body_text: '„Du siger du ved alt om fodbold?“\n„Ja? Spørg!“\n„Godt så. Hvor mange huller er der i et fodboldnet?!“' },
+  { title: 'Astronauter træner i Viborg 🚀', sort_order: 11, body_text: 'Hvorfor træner astronauter på Viborg Stadion?\n\nDet er det eneste sted i DK uden atmosfære.' },
+  { title: 'Brøndby Stadion udvides 📏', sort_order: 12, body_text: 'Hvorfor skal Brøndby Stadion udvides?\n\nFor at få plads til de store nederlag.' },
+];
+
 async function seedContent(db) {
   let added = 0;
   for (const item of REGLER) {
@@ -70,7 +85,14 @@ async function seedContent(db) {
       added++;
     }
   }
-  console.log(`✅ Content seedet: ${added} nye poster (${REGLER.length} regler + ${FACTS.length} facts)`);
+  for (const item of JOKES) {
+    const exists = (await db.execute({ sql: 'SELECT 1 FROM content WHERE title = ? AND type = ?', args: [item.title, 'joke'] })).rows[0];
+    if (!exists) {
+      await db.execute({ sql: 'INSERT INTO content (content_id, type, title, body_text, sort_order) VALUES (?, ?, ?, ?, ?)', args: [uuidv4(), 'joke', item.title, item.body_text, item.sort_order] });
+      added++;
+    }
+  }
+  console.log(`✅ Content seedet: ${added} nye poster (${REGLER.length} regler + ${FACTS.length} facts + ${JOKES.length} jokes)`);
 }
 
 module.exports = { seedContent, FACTS };

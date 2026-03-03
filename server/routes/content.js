@@ -6,6 +6,33 @@ const { adminOnly } = require('../middleware/adminOnly');
 
 const router = express.Router();
 
+// GET /api/content/jokes
+router.get('/jokes', authenticateToken, async (req, res) => {
+  try {
+    const db = getDb();
+    const jokes = (await db.execute({ sql: "SELECT * FROM content WHERE type = 'joke' ORDER BY sort_order ASC", args: [] })).rows;
+    res.json(jokes);
+  } catch (err) { res.status(500).json({ error: 'Serverfejl' }); }
+});
+
+// GET /api/content/facts
+router.get('/facts', authenticateToken, async (req, res) => {
+  try {
+    const db = getDb();
+    const facts = (await db.execute({ sql: "SELECT * FROM content WHERE type = 'fact' ORDER BY sort_order ASC", args: [] })).rows;
+    res.json(facts);
+  } catch (err) { res.status(500).json({ error: 'Serverfejl' }); }
+});
+
+// GET /api/content/rules
+router.get('/rules', authenticateToken, async (req, res) => {
+  try {
+    const db = getDb();
+    const rules = (await db.execute({ sql: "SELECT * FROM content WHERE type = 'regel' ORDER BY sort_order ASC", args: [] })).rows;
+    res.json(rules);
+  } catch (err) { res.status(500).json({ error: 'Serverfejl' }); }
+});
+
 // GET /api/content?type=regel|fact
 router.get('/', authenticateToken, (req, res) => {
   const db = getDb();
