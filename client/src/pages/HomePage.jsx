@@ -13,6 +13,7 @@ import { getMyBadges } from '../api/badges'
 import toast from 'react-hot-toast'
 import WeeklyAwardsDisplay from '../components/ui/WeeklyAwardsDisplay'
 import VolunteerBoard from '../components/ui/VolunteerBoard'
+import DailyFact from '../components/ui/DailyFact'
 
 const WEEKDAYS = ['søndag','mandag','tirsdag','onsdag','torsdag','fredag','lørdag']
 const MONTHS = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec']
@@ -130,6 +131,9 @@ export default function HomePage() {
           </div>
         )}
       </section>
+
+      {/* Dagens Fact */}
+      <DailyFact />
 
       {/* Ugens Helte */}
       <WeeklyAwardsDisplay />
