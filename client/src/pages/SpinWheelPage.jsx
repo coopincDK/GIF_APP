@@ -98,7 +98,8 @@ export default function SpinWheelPage() {
     if (!isAdmin) return
     Promise.allSettled([getUsers(), getLaundryCounts()])
       .then(([usersRes, countsRes]) => {
-        const players = usersRes.status === 'fulfilled' ? (usersRes.value.data || []) : []
+        const players = (usersRes.status === 'fulfilled' ? (usersRes.value.data || []) : [])
+          .map(p => ({ ...p, id: p.id ?? p.user_id })) // normalisér id-felt
         setAllPlayers(players)
         setSelectedIds(new Set(players.map((p) => p.id)))
 
@@ -107,7 +108,7 @@ export default function SpinWheelPage() {
           const raw = countsRes.value.data
           if (Array.isArray(raw)) {
             const map = {}
-            raw.forEach((r) => { map[r.userId ?? r.id] = r.count ?? 0 })
+            raw.forEach((r) => { map[r.user_id ?? r.userId ?? r.id] = r.laundry_count ?? r.count ?? 0 })
             setLaundryCounts(map)
           } else if (raw && typeof raw === 'object') {
             setLaundryCounts(raw)
