@@ -2,6 +2,7 @@ const express = require('express');
 const { getDb } = require('../db/database');
 const { authenticateToken } = require('../middleware/auth');
 const { adminOnly } = require('../middleware/adminOnly');
+const { seed } = require('../db/seed');
 
 const router = express.Router();
 
@@ -51,6 +52,16 @@ router.get('/stats', authenticateToken, adminOnly, async (req, res) => {
     res.json({ userCount, taskCount, completedCount, badgeCount });
   } catch (err) {
     res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+// POST /api/admin/reseed — kør seed igen (tilføjer dummy data)
+router.post('/reseed', authenticateToken, adminOnly, async (req, res) => {
+  try {
+    await seed();
+    res.json({ success: true, message: '✅ Seed kørt — dummy data tilføjet!' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
