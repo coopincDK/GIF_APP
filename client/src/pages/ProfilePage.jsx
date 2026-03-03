@@ -43,8 +43,9 @@ export default function ProfilePage() {
     }
   }
 
+  const backendUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001'
   const avatarUrl = user?.profile_picture_url
-    ? `http://localhost:3001${user.profile_picture_url}`
+    ? `${backendUrl}${user.profile_picture_url}`
     : null
 
   return (
