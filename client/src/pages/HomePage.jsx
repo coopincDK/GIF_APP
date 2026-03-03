@@ -18,6 +18,14 @@ import DailyFact from '../components/ui/DailyFact'
 const WEEKDAYS = ['søndag','mandag','tirsdag','onsdag','torsdag','fredag','lørdag']
 const MONTHS = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec']
 
+const MOTIVATIONS = [
+  'Klar til at smadre det i dag? ⚽',
+  'Lad os give den fuld gas! 💪',
+  'Holdet regner med dig! 🔥',
+  'Mega fedt du er med! 🥳',
+  'Vis hvad du er lavet af! ⚡',
+]
+
 export default function HomePage() {
   const navigate = useNavigate()
   const { user, isAdmin } = useAuth()
@@ -28,6 +36,7 @@ export default function HomePage() {
 
   const now = new Date()
   const dateStr = `${WEEKDAYS[now.getDay()]} d. ${now.getDate()}. ${MONTHS[now.getMonth()]}`
+  const motivation = MOTIVATIONS[now.getDay() % MOTIVATIONS.length]
 
   const loadData = async () => {
     try {
@@ -63,33 +72,60 @@ export default function HomePage() {
 
   const activeTasks = tasks.filter(t => t.status !== 'completed')
   const swapTasks = tasks.filter(t => t.status === 'swap_requested' && t.assignedTo !== user?.id)
+  const completedCount = tasks.filter(t => t.status === 'completed').length
 
   if (loading) return <LoadingSpinner message="Henter data..." />
 
   return (
-    <div>
+    <div className="pb-32">
       {/* Cup nedtælling banner */}
       {active && <CupCountdown />}
 
-      {/* Hilsen */}
-      <div className="px-4 pt-4 pb-2">
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-          <h2 className="text-2xl font-black text-gray-900">
-            Hej {user?.name?.split(' ')[0]}! 👋
-          </h2>
-          <p className="text-gray-500 font-semibold text-sm capitalize">{dateStr}</p>
-        </motion.div>
-      </div>
+      {/* ── Hero-sektion ── */}
+      <motion.div
+        initial={{ opacity: 0, y: -15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className={`mx-4 mt-4 rounded-3xl p-5 shadow-xl ${
+          active
+            ? 'bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900'
+            : 'bg-gradient-to-br from-primary via-primary-light to-emerald-400'
+        }`}
+      >
+        {/* Dato-chip */}
+        <span className={`text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full inline-block mb-3 ${
+          active ? 'bg-yellow-400/20 text-yellow-300' : 'bg-white/20 text-white/80'
+        }`}>
+          📅 {dateStr}
+        </span>
+
+        {/* Velkomst */}
+        <h2 className="text-3xl font-black text-white leading-tight">
+          Hej {user?.name?.split(' ')[0]}! 👋
+        </h2>
+        <p className={`text-base font-bold mt-1 ${active ? 'text-blue-200' : 'text-white/90'}`}>
+          {motivation}
+        </p>
+
+        {/* Mini stats-bar i hero */}
+        <div className="flex gap-3 mt-4">
+          <div className="flex-1 bg-white/15 rounded-2xl px-3 py-2 text-center">
+            <p className="text-2xl font-black text-white">{badges.length}</p>
+            <p className={`text-[11px] font-bold ${active ? 'text-blue-200' : 'text-white/70'}`}>🏅 Badges</p>
+          </div>
+          <div className="flex-1 bg-white/15 rounded-2xl px-3 py-2 text-center">
+            <p className="text-2xl font-black text-white">{completedCount}</p>
+            <p className={`text-[11px] font-bold ${active ? 'text-blue-200' : 'text-white/70'}`}>✅ Udført</p>
+          </div>
+          <div className="flex-1 bg-white/15 rounded-2xl px-3 py-2 text-center">
+            <p className="text-2xl font-black text-white">{activeTasks.length}</p>
+            <p className={`text-[11px] font-bold ${active ? 'text-blue-200' : 'text-white/70'}`}>⚡ Aktive</p>
+          </div>
+        </div>
+      </motion.div>
 
       {/* Coach karakter */}
       <CoachCharacter />
-
-      {/* Stats */}
-      <div className="px-4 grid grid-cols-3 gap-3 mt-2">
-        <StatsCard icon="🏅" label="Badges" value={badges.length} color="text-accent" bgColor="bg-accent/10" />
-        <StatsCard icon="✅" label="Opgaver" value={tasks.filter(t => t.status === 'completed').length} color="text-primary" bgColor="bg-primary/10" />
-        <StatsCard icon="⚡" label="Aktive" value={activeTasks.length} color="text-orange-500" bgColor="bg-orange-50" />
-      </div>
 
       {/* Swap muligheder */}
       {swapTasks.length > 0 && (
@@ -107,21 +143,21 @@ export default function HomePage() {
 
       {/* Mine opgaver */}
       <section className="px-4 mt-4">
-        <h3 className="font-black text-gray-800 mb-3 flex items-center gap-2">
+        <h3 className="font-black text-gray-800 mb-3 flex items-center gap-2 text-lg">
           📋 Mine opgaver
           {activeTasks.length > 0 && (
-            <span className="bg-primary text-white text-xs font-black px-2 py-0.5 rounded-full">{activeTasks.length}</span>
+            <span className="bg-primary text-white text-xs font-black px-2.5 py-1 rounded-full">{activeTasks.length}</span>
           )}
         </h3>
         {activeTasks.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="bg-white rounded-2xl p-6 text-center shadow-sm"
+            className="bg-white rounded-3xl p-6 text-center shadow-md border border-green-100"
           >
-            <span className="text-4xl block mb-2">🎉</span>
-            <p className="font-black text-gray-700">Ingen aktive opgaver!</p>
-            <p className="text-gray-400 text-sm font-medium mt-1">Du er i topform! 💪</p>
+            <span className="text-5xl block mb-2">🎉</span>
+            <p className="font-black text-gray-700 text-lg">Ingen aktive opgaver!</p>
+            <p className="text-gray-400 text-sm font-bold mt-1">Du er i topform! 💪</p>
           </motion.div>
         ) : (
           <div className="space-y-3">
@@ -142,8 +178,8 @@ export default function HomePage() {
       <VolunteerBoard />
 
       {/* Hurtig navigation */}
-      <section className="px-4 mt-6 pb-4">
-        <h3 className="font-black text-gray-800 mb-3">🚀 Genveje</h3>
+      <section className="px-4 mt-6">
+        <h3 className="font-black text-gray-800 mb-3 text-lg">🚀 Genveje</h3>
         <div className="grid grid-cols-2 gap-3">
           {[
             { icon: '💎', label: 'Min Skattekiste', path: '/treasure', color: 'from-amber-400 to-amber-600' },
@@ -153,12 +189,12 @@ export default function HomePage() {
           ].map(({ icon, label, path, color }) => (
             <motion.button
               key={path}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.93 }}
               onClick={() => navigate(path)}
-              className={`bg-gradient-to-br ${color} text-white rounded-2xl p-4 text-left shadow-md`}
+              className={`bg-gradient-to-br ${color} text-white rounded-2xl p-4 text-left shadow-lg active:scale-95 transition-transform`}
             >
-              <span className="text-3xl block mb-1">{icon}</span>
-              <span className="font-black text-sm">{label}</span>
+              <span className="text-3xl block mb-2">{icon}</span>
+              <span className="font-black text-sm leading-tight">{label}</span>
             </motion.button>
           ))}
         </div>

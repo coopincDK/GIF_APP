@@ -241,8 +241,8 @@ export default function SpinWheelPage() {
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
       >
-        <h1 className="text-3xl font-black text-gray-900">🧺 Tøjvask-Hjulet</h1>
-        <p className="text-gray-500 font-semibold mt-1">Hvem vasker tøjet denne uge?</p>
+        <h1 className="text-3xl font-black text-gray-900">🧺 Hvem vasker trøjerne?</h1>
+        <p className="text-gray-500 font-semibold mt-1">Spin og find ugens vaskehjælp! 😄</p>
       </motion.div>
 
       <AnimatePresence mode="wait">
@@ -379,7 +379,7 @@ export default function SpinWheelPage() {
                   : 'bg-primary text-white pulse-glow'
               }`}
             >
-              ✅ Start Hjulet med {selectedIds.size} spillere
+              🎡 Spin med {selectedIds.size} spillere!
             </motion.button>
           </motion.div>
         )}
@@ -410,7 +410,7 @@ export default function SpinWheelPage() {
                 🧺
               </motion.div>
               <p className="text-xs font-black text-green-600 uppercase tracking-widest mb-1">
-                Frivillig redder dagen!
+                Frivillig helt! 🦸
               </p>
               <h2 className="text-2xl font-black text-gray-900 mb-1">
                 {skipVolunteer.name || skipVolunteer.username}

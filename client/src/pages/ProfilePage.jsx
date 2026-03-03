@@ -49,7 +49,7 @@ export default function ProfilePage() {
     : null
 
   return (
-    <div className="min-h-screen bg-green-50 pb-24">
+    <div className="min-h-screen bg-green-50 pb-32">
       {/* Header */}
       <div className="bg-gradient-to-br from-green-700 to-green-500 px-4 pt-6 pb-16">
         <h1 className="text-2xl font-black text-white text-center">👤 Min Profil</h1>

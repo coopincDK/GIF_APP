@@ -17,6 +17,9 @@ const TRAINER_PHRASES = [
   'Dagens fodbold-fact:',
   'Trænerens tip:',
   'Fun fact fra banen:',
+  'Bjarke siger:',
+  'Husk dette:',
+  'Fodbold-nørd alert 🤓:',
 ]
 
 function getDailyIndex(length) {
@@ -58,7 +61,7 @@ export default function DailyFact() {
   return (
     <section className="px-4 mt-5">
       <div className="flex items-center justify-between mb-2">
-        <h2 className="text-lg font-black text-gray-800">💡 Dagens Fact</h2>
+        <h2 className="text-lg font-black text-gray-800">💡 Vidste du det her?</h2>
         <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
           {currentIdx + 1}/{facts.length}
         </span>
@@ -98,7 +101,7 @@ export default function DailyFact() {
             onClick={nextFact}
             className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-2xl bg-primary/10 text-primary font-black text-sm active:scale-95 transition-transform"
           >
-            🎲 Vis en anden fact
+            🎲 Giv mig en til!
           </button>
         </motion.div>
       </AnimatePresence>

@@ -71,7 +71,7 @@ export default function CupCommandPage() {
   const isCupActive = cupStatus?.active
 
   return (
-    <div className={`min-h-screen pb-24 ${isCupActive ? 'bg-blue-950' : 'bg-green-50'}`}>
+    <div className={`min-h-screen pb-32 ${isCupActive ? 'bg-blue-950' : 'bg-green-50'}`}>
       {/* Header */}
       <div className={`px-4 pt-6 pb-8 ${isCupActive ? 'bg-gradient-to-br from-blue-900 to-blue-700' : 'bg-gradient-to-br from-green-700 to-green-500'}`}>
         <div className="flex justify-center mb-3">

@@ -45,7 +45,7 @@ export default function RegisterPage() {
     }
   }
 
-  if (validating) return <LoadingSpinner message="Validerer invitation..." />
+  if (validating) return <LoadingSpinner message="Et øjeblik... 🔍" />
 
   if (inviteError) {
     return (
@@ -56,12 +56,12 @@ export default function RegisterPage() {
           className="bg-white rounded-3xl p-8 shadow-xl text-center max-w-sm w-full"
         >
           <span className="text-6xl block mb-4">❌</span>
-          <h2 className="text-2xl font-black text-gray-900 mb-2">Ugyldig invitation</h2>
+          <h2 className="text-2xl font-black text-gray-900 mb-2">Hov — ugyldigt link! 😅</h2>
           <p className="text-gray-500 font-medium mb-6">
-            Invitationslinket er ugyldigt eller udløbet. Kontakt din træner for et nyt link.
+            Det link virker ikke. Kontakt Bjarke og få et nyt — det ordner han sikkert! 💪
           </p>
           <Link to="/login" className="block bg-primary text-white font-black py-3 rounded-2xl">
-            → Gå til log ind
+            ↩ Gå til log ind
           </Link>
         </motion.div>
       </div>
@@ -78,7 +78,7 @@ export default function RegisterPage() {
         {/* Header */}
         <div className="text-center mb-6">
           <div className="text-5xl mb-3">🎉</div>
-          <h1 className="text-2xl font-black text-gray-900">Opret konto</h1>
+          <h1 className="text-2xl font-black text-gray-900">Kom med på holdet! 🎉</h1>
           {inviteData?.teamName && (
             <div className="mt-2 bg-primary/10 text-primary font-black text-sm px-4 py-2 rounded-2xl inline-block">
               ⚽ {inviteData.teamName}
@@ -126,13 +126,13 @@ export default function RegisterPage() {
             disabled={loading}
             className="w-full animated-gradient text-white font-black py-4 rounded-2xl text-lg shadow-lg flex items-center justify-center gap-2 mt-2"
           >
-            {loading ? <InlineSpinner /> : '🌟 Opret konto'}
+            {loading ? <InlineSpinner /> : '⚽ Ja, jeg vil med! 🎉'}
           </motion.button>
         </form>
 
         <p className="text-center text-gray-500 text-sm font-semibold mt-4">
-          Har du allerede en konto?{' '}
-          <Link to="/login" className="text-primary font-black underline">Log ind →</Link>
+          Allerede en del af holdet?{' '}
+          <Link to="/login" className="text-primary font-black underline">Log ind her 👋</Link>
         </p>
       </motion.div>
     </div>

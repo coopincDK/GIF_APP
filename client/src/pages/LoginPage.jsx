@@ -70,7 +70,7 @@ export default function LoginPage() {
             />
           </motion.div>
           <h1 className="text-3xl font-black text-primary">GIF Hold-Helte</h1>
-          <p className="text-gray-500 font-semibold text-sm mt-1">Grenå IF Fodbold 🌟</p>
+          <p className="text-gray-500 font-semibold text-sm mt-1">Grenå IF U10/U11 ⚽🔥</p>
         </div>
 
         {/* Form */}
@@ -111,14 +111,14 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full animated-gradient text-white font-black py-4 rounded-2xl text-lg shadow-lg flex items-center justify-center gap-2 mt-2"
           >
-            {loading ? <InlineSpinner /> : '🚀 Log ind'}
+            {loading ? <InlineSpinner /> : '⚽ Hop ind!'}
           </motion.button>
         </form>
 
         <p className="text-center text-gray-500 font-semibold mt-4 text-sm">
-          Har du fået en invitation?{' '}
+          Ny på holdet?{' '}
           <Link to="/register" className="text-primary font-black underline">
-            Opret konto →
+            Opret dig her 👋
           </Link>
         </p>
       </motion.div>

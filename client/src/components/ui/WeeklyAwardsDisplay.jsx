@@ -38,15 +38,15 @@ export default function WeeklyAwardsDisplay() {
   return (
     <section className="px-4 mt-5">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-black text-gray-800">🏅 Ugens Helte</h2>
+        <h2 className="text-lg font-black text-gray-800">🏅 Ugens Helte — hvem var bedst?</h2>
         <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-full">Uge {week}</span>
       </div>
 
       {!hasAny ? (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center">
           <div className="text-3xl mb-2">🏆</div>
-          <p className="text-gray-500 font-semibold text-sm">Ugens helte er ikke kåret endnu</p>
-          <p className="text-gray-400 text-xs mt-1">Kommer efter næste kamp!</p>
+          <p className="text-gray-500 font-semibold text-sm">Ugens helte kåres efter næste kamp! 👀</p>
+          <p className="text-gray-400 text-xs mt-1">Trænerne vælger dem 🎯</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-2">

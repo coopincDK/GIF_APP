@@ -86,7 +86,7 @@ export default function BottomNav() {
         className={`fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-30 shadow-lg ${navBg}`}
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 8px)' }}
       >
-        <div className="flex items-center justify-around py-2">
+        <div className="flex items-center justify-around py-3">
           <NavBtn path="/" icon="🏠" label="Hjem" onClick={() => navigate('/')} isActive={isActive('/')} active={active} />
           {isAdmin && (
             <NavBtn path="/spin" icon="🎡" label="Hjul" onClick={() => navigate('/spin')} isActive={isActive('/spin')} active={active} />
@@ -112,7 +112,7 @@ export default function BottomNav() {
 function NavBtn({ path, icon, label, onClick, isActive, active }) {
   return (
     <motion.button
-      whileTap={{ scale: 0.9 }}
+      whileTap={{ scale: 0.85 }}
       onClick={onClick}
       className={`flex flex-col items-center gap-0.5 py-1 px-2 rounded-2xl transition-all ${
         isActive
@@ -126,6 +126,16 @@ function NavBtn({ path, icon, label, onClick, isActive, active }) {
     >
       <span className="text-xl leading-none">{icon}</span>
       <span className="text-[10px] font-bold">{label}</span>
+      {/* Aktiv dot-indikator */}
+      <span
+        className={`block rounded-full transition-all duration-200 ${
+          isActive
+            ? active
+              ? 'w-4 h-1 bg-yellow-400'
+              : 'w-4 h-1 bg-primary'
+            : 'w-0 h-1'
+        }`}
+      />
     </motion.button>
   )
 }

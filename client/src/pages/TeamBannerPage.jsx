@@ -28,7 +28,7 @@ export default function TeamBannerPage() {
   if (loading) return <LoadingSpinner message="Henter hold-banner..." />
 
   return (
-    <div>
+    <div className="pb-32">
       <div className="px-4 py-4">
         {/* Header */}
         <motion.div

@@ -444,7 +444,7 @@ export default function AdminPage() {
   if (!isAdmin) return null
 
   return (
-    <div>
+    <div className="pb-32">
       <div className="py-4">
         {/* Header */}
         <div className="px-4 mb-4">

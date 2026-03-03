@@ -70,7 +70,7 @@ export default function VolunteerBoard() {
   return (
     <section className="px-4 mt-5">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-black text-gray-800">🙋 Frivillige</h2>
+        <h2 className="text-lg font-black text-gray-800">🙋 Hvem hjælper til?</h2>
         <input
           type="date"
           value={matchDate}
@@ -108,7 +108,7 @@ export default function VolunteerBoard() {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-300 text-[10px] mb-2 italic">Ingen endnu</p>
+                <p className="text-gray-300 text-[10px] mb-2 italic">Ingen har meldt sig endnu... vær den første! 🌟</p>
               )}
 
               {/* Knap */}
@@ -117,14 +117,14 @@ export default function VolunteerBoard() {
                   onClick={() => handleCancel(t.id)}
                   className="w-full text-[11px] font-black py-1.5 rounded-xl bg-red-50 text-red-500 border border-red-200"
                 >
-                  Afmeld
+                  Jeg kan alligevel ikke 😅
                 </button>
               ) : (
                 <button
                   onClick={() => handleSignup(t.id)}
                   className="w-full text-[11px] font-black py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/20"
                 >
-                  Meld mig! 🙋
+                  Jeg tager den! 💪
                 </button>
               )}
             </motion.div>

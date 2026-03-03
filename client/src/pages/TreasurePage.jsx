@@ -40,7 +40,7 @@ export default function TreasurePage() {
   if (loading) return <LoadingSpinner message="Henter skattekiste..." />
 
   return (
-    <div>
+    <div className="pb-32">
       {newBadge && <BadgeUnlock badge={newBadge} onClose={() => setNewBadge(null)} />}
 
       <div className="px-4 py-4">

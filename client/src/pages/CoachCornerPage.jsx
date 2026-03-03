@@ -49,7 +49,7 @@ export default function CoachCornerPage() {
         >
           <div className="text-4xl mb-1">🎓</div>
           <h1 className="text-2xl font-black text-white">Trænerens Hjørne</h1>
-          <p className="text-white/80 text-sm font-semibold mt-1">Lær mere — bliv en bedre spiller!</p>
+          <p className="text-white/80 text-sm font-semibold mt-1">Kend reglerne, vind kampen! 💪</p>
         </motion.div>
 
         {/* Træner-besked */}
@@ -64,7 +64,7 @@ export default function CoachCornerPage() {
           </div>
           <div>
             <p className="text-white font-bold text-sm leading-snug">
-              "Kend reglerne — det giver dig fordelen! 🧠"
+              "Kend reglerne — så er du allerede foran! 🧠⚽"
             </p>
             <p className="text-white/70 text-xs mt-0.5 font-semibold">— Træner Bjarke</p>
           </div>
@@ -159,9 +159,9 @@ export default function CoachCornerPage() {
           className="bg-gradient-to-r from-primary to-green-500 rounded-2xl p-4 text-center shadow-lg"
         >
           <div className="text-3xl mb-2">🌟</div>
-          <p className="text-white font-black text-base">Du er en Hold-Helt!</p>
+          <p className="text-white font-black text-base">Du er en ægte Hold-Helt! 🌟</p>
           <p className="text-white/80 text-xs font-semibold mt-1">
-            Kend reglerne, respekter spillet, vær en god holdkammerat
+            Kend spillereglerne, kæmp for holdet og fejr det godt! 🥳⚽
           </p>
         </motion.div>
       </div>
