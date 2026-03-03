@@ -20,8 +20,8 @@ async function getCupStatus(db) {
   return { active, override, daysUntilCup, cupDate: '2026-07-23', activationDate: activationDate.toISOString().split('T')[0] };
 }
 
-// GET /api/cup/status
-router.get('/status', authenticateToken, async (req, res) => {
+// GET /api/cup/status — offentlig, kræver ikke login
+router.get('/status', async (req, res) => {
   try {
     res.json(await getCupStatus(getDb()));
   } catch (err) {

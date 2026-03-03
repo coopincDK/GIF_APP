@@ -1,14 +1,19 @@
 import { createContext, useState, useEffect, useCallback, useRef } from 'react'
-import { getCupStatus } from '../api/cup'
+import axios from 'axios'
+
+// Public axios uden auth — cup/status skal være tilgængeligt uden login
+const publicApi = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
+  timeout: 5000,
+})
 
 export const CupModeContext = createContext(null)
 
-// Cup dato: 23. juli 2026. Auto-mode aktiveres 4 uger før = 25. juni 2026
 const CUP_DATE = new Date('2026-07-23T10:00:00')
 const AUTO_ACTIVATE_DATE = new Date('2026-06-25T00:00:00')
 
 export function CupModeProvider({ children }) {
-  const [override, setOverride] = useState('auto') // 'on' | 'off' | 'auto'
+  const [override, setOverride] = useState('auto')
   const [active, setActive] = useState(false)
   const [daysUntilCup, setDaysUntilCup] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -23,25 +28,23 @@ export function CupModeProvider({ children }) {
   const determineActive = (ov) => {
     if (ov === 'on') return true
     if (ov === 'off') return false
-    // auto: aktivér hvis vi er forbi AUTO_ACTIVATE_DATE
     return new Date() >= AUTO_ACTIVATE_DATE
   }
 
   const fetchStatus = useCallback(async () => {
     try {
-      const { data } = await getCupStatus()
+      const { data } = await publicApi.get('/cup/status')
       const ov = data.override ?? 'auto'
       setOverride(ov)
       setActive(determineActive(ov))
     } catch {
-      // Fallback til lokal beregning — ingen crash, ingen re-render loop
+      // Fallback — ingen crash, ingen loop
       setActive(new Date() >= AUTO_ACTIVATE_DATE)
     } finally {
       setLoading(false)
     }
-  }, []) // eslint-disable-line
+  }, [])
 
-  // Opdater override lokalt og hent nyt fra backend
   const refreshStatus = useCallback(async (newOverride) => {
     if (newOverride !== undefined) {
       setOverride(newOverride)
@@ -55,7 +58,7 @@ export function CupModeProvider({ children }) {
     fetchStatus()
     setDaysUntilCup(calculateDaysUntilCup())
 
-    // Polling hvert 30 sekunder
+    // Poll hvert 30 sek
     intervalRef.current = setInterval(() => {
       fetchStatus()
       setDaysUntilCup(calculateDaysUntilCup())
@@ -66,13 +69,10 @@ export function CupModeProvider({ children }) {
 
   return (
     <CupModeContext.Provider value={{
-      active,
-      override,
-      daysUntilCup,
-      loading,
-      cupDate: CUP_DATE,
-      autoActivateDate: AUTO_ACTIVATE_DATE,
+      active, override, daysUntilCup, loading,
+      cupDate: CUP_DATE, autoActivateDate: AUTO_ACTIVATE_DATE,
       refreshStatus,
+      cupStatus: { active, override, daysUntilCup },
     }}>
       {children}
     </CupModeContext.Provider>
