@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion'
 import { useAuth } from './hooks/useAuth'
 import LoadingSpinner from './components/ui/LoadingSpinner'
 import { FeatureFlagsProvider } from './hooks/useFeatureFlags'
+import InstallBanner from './components/ui/InstallBanner'
 import AppShell from './components/layout/AppShell'
 
 import LoginPage from './pages/LoginPage'
@@ -43,6 +44,7 @@ function PublicRoute({ children }) {
 export default function App() {
   return (
     <FeatureFlagsProvider>
+    <InstallBanner />
     <AnimatePresence mode="wait">
       <Routes>
         {/* Public — ingen AppShell */}

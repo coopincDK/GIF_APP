@@ -83,6 +83,67 @@ const SECTIONS = [
     ]
   },
   {
+    id: 'install',
+    emoji: '📲',
+    title: 'Installer app',
+    color: 'from-blue-500 to-indigo-600',
+    items: [
+      {
+        q: '🍎 iPhone/iPad — Sådan tilføjer du appen',
+        a: `VIGTIGT: Du skal bruge Safari — ikke Chrome eller Firefox!
+
+1️⃣  Åbn Safari og gå til:
+gif-app-navy-ten.vercel.app
+
+2️⃣  Tryk på Del-knappen ⬆️
+(Firkanten med pilen op — midt i Safaris bundmenu)
+
+3️⃣  Scroll ned og tryk:
+„Føj til hjemækran“ (med ➕-ikon)
+
+4️⃣  Tryk „Tilføj“ øverst til højre
+
+✅ Færdig! Appen vises nu på din hjemækran som en rigtig app.`
+      },
+      {
+        q: '🤖 Android — Sådan tilføjer du appen',
+        a: `1️⃣  Åbn Chrome og gå til:
+gif-app-navy-ten.vercel.app
+
+2️⃣  Tryk på de tre prikker ⋮ øverst til højre
+
+3️⃣  Vælg „Føj til startskærm“
+
+4️⃣  Tryk „Tilføj“ i dialogen
+
+✅ Færdig! Appen vises på din startskærm.`
+      },
+      {
+        q: '🚀 Hvorfor installere som app?',
+        a: `⚡ Hurtigere end browser
+📲 Ikon på hjemækranen — ét tryk for at åbne
+🎨 Fuld skærm uden browserbjAlke
+🔕 Virker offline (grundfunktioner)
+🔔 Klar til notifikationer
+
+Del linket med alle forældre:
+gif-app-navy-ten.vercel.app`
+      },
+      {
+        q: '⚠️ Virker ikke på iPhone?',
+        a: `Det skyldes næsten altid at du IKKE bruger Safari.
+
+Løsning:
+1. Kopieer linket: gif-app-navy-ten.vercel.app
+2. Åbn Safari (det orange/blå kompas-ikon)
+3. Indsæt linket i adresselinjen
+4. Følg installationsguiden igen
+
+Husk: På iPhone er Safari den ENESTE browser der kan installere webapps.`
+      },
+    ]
+  },
+  {
     id: 'setup',
     emoji: '🛠️',
     title: 'Teknisk opsætning',
