@@ -9,6 +9,34 @@ const router = express.Router();
 // Alle gyldige kategorier (udvides løbende — ingen hård validering)
 const VALID_CATEGORIES = null; // null = accepter alle
 
+// GET /api/awards/latest — seneste uge med mindst én award (fallback til tom)
+router.get('/latest', authenticateToken, async (req, res) => {
+  try {
+    const db = getDb();
+    const latest = (await db.execute({
+      sql: `SELECT week_number, year FROM weekly_awards
+            ORDER BY year DESC, week_number DESC LIMIT 1`,
+      args: []
+    })).rows[0];
+
+    if (!latest) return res.json({ week: null, year: null, awards: [] });
+
+    const awards = (await db.execute({
+      sql: `SELECT wa.award_id, wa.category, wa.week_number, wa.year, wa.note,
+                   u.user_id, u.name as user_name, u.profile_picture_url
+            FROM weekly_awards wa
+            JOIN users u ON wa.user_id = u.user_id
+            WHERE wa.week_number = ? AND wa.year = ?
+            ORDER BY wa.created_at ASC`,
+      args: [latest.week_number, latest.year]
+    })).rows;
+
+    res.json({ week: latest.week_number, year: latest.year, awards });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/awards/week?week=X&year=Y  — alle kan se ugens helte
 router.get('/week', authenticateToken, async (req, res) => {
   try {
