@@ -58,11 +58,13 @@ export default function HomePage() {
 
   useEffect(() => { loadData() }, [])
 
+  const getTaskId = (t) => t.task_id || t.id
+
   const handleComplete = async (id) => {
     try {
       await completeTask(id)
       toast.success('Opgave udført! 🎉')
-      setTasks(t => t.map(x => x.id === id ? { ...x, status: 'completed' } : x))
+      setTasks(t => t.map(x => getTaskId(x) === id ? { ...x, status: 'completed' } : x))
     } catch { toast.error('Kunne ikke markere opgave') }
   }
 
@@ -70,7 +72,7 @@ export default function HomePage() {
     try {
       await requestSwap(id)
       toast.success('Bytteforespørgsel sendt! 🔄')
-      setTasks(t => t.map(x => x.id === id ? { ...x, status: 'swap_requested' } : x))
+      setTasks(t => t.map(x => getTaskId(x) === id ? { ...x, status: 'swap_requested' } : x))
     } catch { toast.error('Kunne ikke sende bytteforespørgsel') }
   }
 
@@ -78,8 +80,7 @@ export default function HomePage() {
     try {
       await acceptSwap(id)
       toast.success('Du har overtaget opgaven! 💪')
-      // Fjern opgaven fra swap-listen og genindlæs
-      setTasks(t => t.filter(x => x.id !== id))
+      setTasks(t => t.filter(x => getTaskId(x) !== id))
       loadData()
     } catch (e) { toast.error(e?.response?.data?.error || 'Kunne ikke overtage opgaven') }
   }

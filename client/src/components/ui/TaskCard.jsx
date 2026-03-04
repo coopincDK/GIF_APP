@@ -18,6 +18,8 @@ const STATUS_COLORS = {
 export default function TaskCard({ task, onComplete, onRequestSwap, onAcceptSwap, isAdmin }) {
   const icon = TASK_ICONS[task?.type?.toLowerCase()] || TASK_ICONS.default
   const statusColor = STATUS_COLORS[task?.status] || STATUS_COLORS.active
+  // Backend returnerer task_id, frontend bruger id — håndter begge
+  const taskId = task?.task_id || task?.id
 
   return (
     <motion.div
@@ -53,7 +55,7 @@ export default function TaskCard({ task, onComplete, onRequestSwap, onAcceptSwap
           {onComplete && (
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => onComplete(task.id)}
+              onClick={() => onComplete(taskId)}
               className="flex-1 flex items-center justify-center gap-2 bg-primary text-white font-bold py-2 px-3 rounded-xl text-sm"
             >
               <CheckCircle size={14} />
@@ -63,7 +65,7 @@ export default function TaskCard({ task, onComplete, onRequestSwap, onAcceptSwap
           {onRequestSwap && task?.status !== 'swap_requested' && !task?.is_swap_offered && (
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => onRequestSwap(task.id)}
+              onClick={() => onRequestSwap(taskId)}
               className="flex items-center justify-center gap-1 bg-orange-100 text-orange-700 font-bold py-2 px-3 rounded-xl text-sm"
             >
               <ArrowLeftRight size={14} />
@@ -73,7 +75,7 @@ export default function TaskCard({ task, onComplete, onRequestSwap, onAcceptSwap
           {onAcceptSwap && (task?.status === 'swap_requested' || task?.is_swap_offered) && (
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => onAcceptSwap(task.id)}
+              onClick={() => onAcceptSwap(taskId)}
               className="flex-1 flex items-center justify-center gap-2 bg-orange-500 text-white font-bold py-2 px-3 rounded-xl text-sm"
             >
               <ArrowLeftRight size={14} />
