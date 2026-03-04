@@ -62,6 +62,30 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
+// ── GET /api/football/debug — rå cache-data (kun admin)
+router.get('/debug', authenticateToken, adminOnly, async (req, res) => {
+  try {
+    const db = getDb();
+    const matchCache = await getCache(db, 'superliga_matches');
+    const total = matchCache?.data?.length || 0;
+    const now = new Date();
+    const upcoming = (matchCache?.data || []).filter(m => new Date(m.utcDate) >= now);
+    const recent   = (matchCache?.data || []).filter(m => new Date(m.utcDate) < now);
+    res.json({
+      api_key_set: !!process.env.FOOTBALL_DATA_API_KEY,
+      cache_fetched_at: matchCache?.fetched_at || null,
+      total_matches_in_cache: total,
+      upcoming_count: upcoming.length,
+      recent_count: recent.length,
+      first_upcoming: upcoming[0] || null,
+      last_recent: recent[recent.length - 1] || null,
+      competition: 'DSL',
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── POST /api/football/sync — manuel sync (kun admin) ─────────────────────────
 router.post('/sync', authenticateToken, adminOnly, async (req, res) => {
   try {

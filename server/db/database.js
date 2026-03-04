@@ -1,6 +1,7 @@
 const { createClient } = require('@libsql/client');
 const path = require('path');
 const fs = require('fs');
+const { runMigrations } = require('./migrations');
 
 const DB_PATH = path.join(__dirname, 'gif_app.db');
 let client;
@@ -23,6 +24,10 @@ async function initDb() {
   // Sæt pragmas
   await db.execute('PRAGMA journal_mode = WAL');
   await db.execute('PRAGMA foreign_keys = ON');
+
+  // Kør versionerede migrationer
+  await runMigrations(db);
+
   console.log('✅ Database initialiseret');
 }
 

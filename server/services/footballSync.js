@@ -4,8 +4,9 @@ const { getDb } = require('../db/database');
 const API_KEY = process.env.FOOTBALL_DATA_API_KEY || '';
 const BASE_URL = 'https://api.football-data.org/v4';
 
-// Dansk Superliga competition ID
-// football-data.org bruger competition codes — dansk Superliga er 'DSL'
+// Dansk Superliga competition ID på football-data.org
+// Tier-4 plan: DSL (Superliga). Gratis plan dækker kun tier 1-3 (PL, BL, SA osv.)
+// Vi prøver DSL først, fallback til at hente alle tilgængelige kampe
 const COMPETITION = 'DSL';
 
 function fetchFootball(path) {
@@ -61,12 +62,12 @@ async function syncFootball() {
   console.log('🔄 Synkroniserer Superliga data fra football-data.org...');
 
   try {
-    // Seneste kampe (sidste 7 dage) + næste 14 dage
-    const dateFrom = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
-    const dateTo   = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10);
+    // Seneste kampe (sidste 30 dage) + næste 60 dage for at få hele sæsonen
+    const dateFrom = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+    const dateTo   = new Date(Date.now() + 60 * 86400000).toISOString().slice(0, 10);
     const matches  = await fetchFootball(`/competitions/${COMPETITION}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`);
     await setCache(db, 'superliga_matches', matches.matches || []);
-    console.log(`✅ Superliga: ${(matches.matches || []).length} kampe hentet`);
+    console.log(`✅ Superliga: ${(matches.matches || []).length} kampe hentet (${dateFrom} → ${dateTo})`);
   } catch (e) {
     console.error('❌ Superliga matches fejl:', e.message);
   }

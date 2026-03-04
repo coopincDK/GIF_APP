@@ -297,63 +297,253 @@ function TasksTab() {
   )
 }
 
+// Alle award-kategorier med sticker-billeder
+const AWARD_CATEGORIES = [
+  { key: 'mvp',        emoji: '🏆', label: 'Ugens MVP',         desc: 'Kampens allerbedste spiller',          stickerImg: '/assets/stickers/27_medalje.png' },
+  { key: 'fighter',   emoji: '⚔️', label: 'Ugens Fighter',     desc: 'Kæmpede hårdest på banen',              stickerImg: '/assets/stickers/15_ild_fart.png' },
+  { key: 'udvikling', emoji: '📈', label: 'Ugens Udvikling',   desc: 'Viste størst fremgang',                 stickerImg: '/assets/stickers/12_stjaerne_oejne.png' },
+  { key: 'holdaand',  emoji: '🤝', label: 'Ugens Holdspiller', desc: 'Bedste holdspiller',                   stickerImg: '/assets/stickers/18_hold_kram.png' },
+  { key: 'humor',     emoji: '😄', label: 'Ugens Humor',       desc: 'Holdt humøret oppe',                   stickerImg: '/assets/stickers/11_thumbs_up.png' },
+  { key: 'energi',    emoji: '💪', label: 'Ugens Energi',      desc: 'Mest energi og engagement',            stickerImg: '/assets/stickers/10_vandflasker.png' },
+  { key: 'fokus',     emoji: '🎯', label: 'Ugens Fokus',       desc: 'Bedst koncentration og fokus',         stickerImg: '/assets/stickers/14_taenker.png' },
+  { key: 'aflevering',emoji: '🎯', label: 'Ugens Aflevering',  desc: 'Præciseste afleveringer',               stickerImg: '/assets/stickers/28_hjoernespark.png' },
+  { key: 'assist',    emoji: '🤜', label: 'Ugens Assist',      desc: 'Flest assists eller bedste oplæg',     stickerImg: '/assets/stickers/04_high_five.png' },
+  { key: 'skud',      emoji: '🔥', label: 'Ugens Skud',        desc: 'Farligste skud på mål',                stickerImg: '/assets/stickers/01_spiller_spark.png' },
+  { key: 'dribbling', emoji: '🌀', label: 'Ugens Dribbling',   desc: 'Flotteste driblinger',                 stickerImg: '/assets/stickers/05_fodbold.png' },
+  { key: 'forsvar',   emoji: '🛡️', label: 'Ugens Forsvar',     desc: 'Bedste defensive indsats',             stickerImg: '/assets/stickers/09_fodboldmaal.png' },
+  { key: 'keeper',    emoji: '🧄', label: 'Ugens Redning',     desc: 'Bedste redning eller keeperspil',      stickerImg: '/assets/stickers/02_keeper_redning.png' },
+  { key: 'sprint',    emoji: '🏃', label: 'Ugens Sprint',      desc: 'Hurtigste spiller på banen',           stickerImg: '/assets/stickers/13_sved_traening.png' },
+  { key: 'ros',       emoji: '⭐', label: 'Ugens Ros',         desc: 'Fortjener ekstra ros denne uge',       stickerImg: '/assets/stickers/24_nummer_et.png' },
+  { key: 'kommentar', emoji: '💬', label: 'Ugens Kommentar',   desc: 'Bedste kommentar til holdet',          stickerImg: '/assets/stickers/30_klap_haender.png' },
+  { key: 'soveste',   emoji: '😴', label: 'Ugens Soveste',     desc: 'Var lidt i drømmeland 😄',            stickerImg: '/assets/stickers/14_taenker.png' },
+  { key: 'fremmøde',  emoji: '📅', label: 'Ugens Fremmøde',    desc: 'Aldrig udeblevet — altid klar!',       stickerImg: '/assets/stickers/20_kegler.png' },
+  { key: 'attitude',  emoji: '😎', label: 'Ugens Attitude',    desc: 'Bedste indstilling og attitude',       stickerImg: '/assets/stickers/11_thumbs_up.png' },
+  { key: 'leder',     emoji: '👑', label: 'Ugens Leder',       desc: 'Naturlig leder på banen',              stickerImg: '/assets/stickers/07_guldpokal.png' },
+  { key: 'opmuntrer', emoji: '📣', label: 'Ugens Opmuntrer',   desc: 'Opmuntrede og heppede på holdet',      stickerImg: '/assets/stickers/30_klap_haender.png' },
+  { key: 'kreativ',   emoji: '🎨', label: 'Ugens Kreative',    desc: 'Mest kreative spil og løsninger',      stickerImg: '/assets/stickers/12_stjaerne_oejne.png' },
+  { key: 'jubel',     emoji: '🎉', label: 'Ugens Jubel',       desc: 'Fejrede mest og bedst',                stickerImg: '/assets/stickers/03_maal_jubel.png' },
+  { key: 'bold',      emoji: '⚽', label: 'Ugens Boldmester',  desc: 'Bedst til at holde bolden',            stickerImg: '/assets/stickers/05_fodbold.png' },
+  { key: 'heading',   emoji: '🧠', label: 'Ugens Heading',     desc: 'Bedste hovedstød',                      stickerImg: '/assets/stickers/06_fodboldstovle.png' },
+  { key: 'faldgruppe',emoji: '🤦', label: 'Ugens Faldgruppe',  desc: 'Faldt flest gange... men rejste sig!', stickerImg: '/assets/stickers/08_floejte.png' },
+  { key: 'madpakke',  emoji: '🥪', label: 'Ugens Madpakke',    desc: 'Bedste madpakke til træning',           stickerImg: '/assets/stickers/17_frugtskaal.png' },
+  { key: 'trøje',     emoji: '👕', label: 'Ugens Trøje',       desc: 'Flotteste/sjoveste trøje',              stickerImg: '/assets/stickers/16_vaskemaskine.png' },
+]
+
+function getISOWeek(date) {
+  const d = new Date(date); d.setHours(0,0,0,0)
+  d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7)
+  const w1 = new Date(d.getFullYear(), 0, 4)
+  return 1 + Math.round(((d - w1) / 86400000 - 3 + (w1.getDay() + 6) % 7) / 7)
+}
+
+function getWeekLabel(week, year) {
+  const jan4 = new Date(year, 0, 4)
+  const dow = (jan4.getDay() + 6) % 7
+  const mon = new Date(jan4); mon.setDate(jan4.getDate() - dow + (week - 1) * 7)
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6)
+  const fmt = d => d.toLocaleDateString('da-DK', { day: 'numeric', month: 'short' })
+  return `${fmt(mon)} – ${fmt(sun)}`
+}
+
 // ─── Badges Tab ───────────────────────────────────────────────────────────────
 function BadgesTab() {
-  const [badges, setBadges] = useState([])
-  const [users, setUsers] = useState([])
-  const [selectedBadge, setSelectedBadge] = useState('')
-  const [selectedUser, setSelectedUser] = useState('')
-  const [awarding, setAwarding] = useState(false)
+  const now = new Date()
+  const curWeek = getISOWeek(now)
+  const curYear = now.getFullYear()
+  const [week, setWeek]       = useState(curWeek)
+  const [year, setYear]       = useState(curYear)
+  const [awards, setAwards]   = useState([])
+  const [users, setUsers]     = useState([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving]   = useState({})
+  const [openCat, setOpenCat] = useState(null)
+  const [celebration, setCelebration] = useState(null)
 
   useEffect(() => {
-    Promise.all([getAdminBadges(), getUsers()])
-      .then(([b, u]) => { setBadges(b.data || []); setUsers(u.data || []) })
-      .catch(() => {})
+    getUsers().then(r => setUsers(r.data || [])).catch(() => {})
   }, [])
 
-  const handleAward = async () => {
-    if (!selectedBadge || !selectedUser) { toast.error('Vælg badge og bruger'); return }
-    setAwarding(true)
+  useEffect(() => {
+    setLoading(true)
+    getWeekAwards(week, year)
+      .then(r => setAwards(r.data?.awards || []))
+      .catch(() => setAwards([]))
+      .finally(() => setLoading(false))
+  }, [week, year])
+
+  const awardFor = cat => awards.find(a => a.category === cat)
+
+  const handleAssign = async (category, userId) => {
+    setSaving(s => ({ ...s, [category]: true }))
     try {
-      await awardBadgeToUser(selectedUser, selectedBadge)
-      toast.success('Badge tildelt! 🏅')
-      setSelectedBadge(''); setSelectedUser('')
-    } catch { toast.error('Kunne ikke tildele badge') }
-    finally { setAwarding(false) }
+      const res = await createAward({ user_id: userId, category, week_number: week, year })
+      setAwards(prev => [...prev.filter(a => a.category !== category), res.data])
+      const cat = AWARD_CATEGORIES.find(c => c.key === category)
+      setCelebration({ message: `${cat?.emoji} ${cat?.label} tildelt!`, stickerImg: cat?.stickerImg })
+      setOpenCat(null)
+    } catch (e) { toast.error(e?.response?.data?.error || 'Fejl') }
+    finally { setSaving(s => ({ ...s, [category]: false })) }
   }
+
+  const handleRemove = async (category) => {
+    const award = awardFor(category)
+    if (!award) return
+    setSaving(s => ({ ...s, [category]: true }))
+    try {
+      await deleteAward(award.award_id)
+      setAwards(prev => prev.filter(a => a.category !== category))
+      toast.success('Fjernet')
+    } catch { toast.error('Fejl') }
+    finally { setSaving(s => ({ ...s, [category]: false })) }
+  }
+
+  const isPast   = year < curYear || (year === curYear && week < curWeek)
+  const isFuture = year > curYear || (year === curYear && week > curWeek)
 
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-2xl shadow-sm p-4 space-y-3">
-        <h4 className="font-black text-gray-700">Tildel badge manuelt</h4>
-        <select value={selectedUser} onChange={e => setSelectedUser(e.target.value)}
-          className="w-full border-2 border-gray-200 rounded-xl px-3 py-2 font-semibold text-sm">
-          <option value="">Vælg spiller...</option>
-          {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-        </select>
-        <select value={selectedBadge} onChange={e => setSelectedBadge(e.target.value)}
-          className="w-full border-2 border-gray-200 rounded-xl px-3 py-2 font-semibold text-sm">
-          <option value="">Vælg badge...</option>
-          {badges.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-        </select>
-        <motion.button whileTap={{ scale: 0.97 }} onClick={handleAward} disabled={awarding}
-          className="w-full bg-accent text-gray-900 font-black py-3 rounded-xl flex items-center justify-center gap-2">
-          {awarding ? <InlineSpinner size={16} /> : <Award size={16} />}
-          Tildel badge
-        </motion.button>
-      </div>
-      <div className="space-y-2">
-        {badges.map(b => (
-          <div key={b.id} className="bg-white rounded-2xl shadow-sm p-4 flex items-center gap-3">
-            <span className="text-2xl">🏅</span>
-            <div>
-              <p className="font-black text-gray-900">{b.name}</p>
-              <p className="text-gray-400 text-xs font-semibold">{b.description}</p>
+
+      {/* Konfetti-fejring */}
+      <AnimatePresence>
+        {celebration && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+            onClick={() => setCelebration(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.5, rotate: -10 }} animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', damping: 12 }}
+              className="bg-white rounded-3xl p-8 mx-6 text-center shadow-2xl border-4 border-primary"
+              onClick={e => e.stopPropagation()}
+            >
+              {celebration.stickerImg && (
+                <motion.img src={celebration.stickerImg} alt=""
+                  animate={{ rotate: [0, -8, 8, -4, 4, 0], scale: [1, 1.15, 1] }}
+                  transition={{ duration: 0.7 }}
+                  className="w-24 h-24 object-contain mx-auto mb-3"
+                />
+              )}
+              <p className="font-black text-2xl text-gray-900 mb-1">{celebration.message}</p>
+              <p className="text-gray-400 text-sm font-semibold">Uge {week} • {year}</p>
+              <motion.button whileTap={{ scale: 0.95 }} onClick={() => setCelebration(null)}
+                className="mt-4 bg-primary text-white font-black px-6 py-2 rounded-xl">
+                Fedt! 🎉
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Uge-navigator */}
+      <div className="bg-white rounded-2xl shadow-sm p-4">
+        <div className="flex items-center justify-between mb-1">
+          <motion.button whileTap={{ scale: 0.9 }}
+            onClick={() => week === 1 ? (setWeek(52), setYear(y => y-1)) : setWeek(w => w-1)}
+            className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center font-black text-gray-600 text-xl">
+            ‹
+          </motion.button>
+          <div className="text-center">
+            <div className="flex items-center gap-2 justify-center">
+              <span className="font-black text-gray-900">Uge {week}</span>
+              {week === curWeek && year === curYear && <span className="bg-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full">DENNE UGE</span>}
+              {isPast   && <span className="bg-gray-200 text-gray-500 text-[10px] font-black px-2 py-0.5 rounded-full">HISTORISK</span>}
+              {isFuture && <span className="bg-blue-100 text-blue-600 text-[10px] font-black px-2 py-0.5 rounded-full">PLANLAGT</span>}
             </div>
+            <p className="text-gray-400 text-xs font-semibold mt-0.5">{getWeekLabel(week, year)}</p>
           </div>
-        ))}
-        {badges.length === 0 && <p className="text-center text-gray-400 font-semibold py-6">Ingen badges defineret</p>}
+          <motion.button whileTap={{ scale: 0.9 }}
+            onClick={() => week === 52 ? (setWeek(1), setYear(y => y+1)) : setWeek(w => w+1)}
+            className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center font-black text-gray-600 text-xl">
+            ›
+          </motion.button>
+        </div>
+        {(week !== curWeek || year !== curYear) && (
+          <button onClick={() => { setWeek(curWeek); setYear(curYear) }}
+            className="w-full mt-2 text-primary font-black text-xs py-1.5 bg-primary/5 rounded-xl">
+            → Gå til denne uge
+          </button>
+        )}
       </div>
+
+      {/* Progress-bar */}
+      <div className="flex items-center gap-3 px-1">
+        <p className="font-black text-gray-700 text-sm whitespace-nowrap">{awards.length}/{AWARD_CATEGORIES.length}</p>
+        <div className="flex-1 bg-gray-100 rounded-full h-2">
+          <div className="bg-primary h-2 rounded-full transition-all duration-500"
+            style={{ width: `${(awards.length / AWARD_CATEGORIES.length) * 100}%` }} />
+        </div>
+        <span className="text-xs font-bold text-gray-400">{Math.round((awards.length / AWARD_CATEGORIES.length) * 100)}%</span>
+      </div>
+
+      {/* Kategori-liste */}
+      {loading ? <div className="py-10 flex justify-center"><InlineSpinner size={28} /></div> : (
+        <div className="space-y-2">
+          {AWARD_CATEGORIES.map(cat => {
+            const award = awardFor(cat.key)
+            const isOpen = openCat === cat.key
+            const isSav  = saving[cat.key]
+            return (
+              <motion.div key={cat.key}
+                className={`bg-white rounded-2xl shadow-sm overflow-hidden border-2 transition-colors ${
+                  award ? 'border-primary/40' : 'border-transparent'
+                }`}>
+                <button onClick={() => setOpenCat(isOpen ? null : cat.key)}
+                  className="w-full flex items-center gap-3 p-3 text-left">
+                  <img src={cat.stickerImg} alt="" className="w-10 h-10 object-contain flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-black text-gray-800 text-sm">{cat.label}</p>
+                    {award
+                      ? <p className="text-primary text-xs font-black">✅ {award.user_name}</p>
+                      : <p className="text-gray-400 text-xs font-semibold truncate">{cat.desc}</p>}
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {award && (
+                      <button onClick={e => { e.stopPropagation(); handleRemove(cat.key) }}
+                        className="text-red-400 p-1 rounded-lg">
+                        <Trash2 size={13} />
+                      </button>
+                    )}
+                    <span className={`text-gray-400 font-black text-lg transition-transform duration-200 ${isOpen ? 'rotate-45' : ''}`}>+</span>
+                  </div>
+                </button>
+
+                <AnimatePresence>
+                  {isOpen && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+                      <div className="px-3 pb-3 border-t border-gray-50">
+                        <p className="text-xs font-black text-gray-500 mt-2 mb-2">Vælg spiller:</p>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {users.filter(u => u.role !== 'admin').map(u => (
+                            <motion.button key={u.user_id || u.id} whileTap={{ scale: 0.95 }}
+                              onClick={() => handleAssign(cat.key, u.user_id || u.id)}
+                              disabled={isSav}
+                              className={`flex items-center gap-2 p-2 rounded-xl border-2 text-left transition-colors ${
+                                award?.user_id === (u.user_id || u.id)
+                                  ? 'border-primary bg-primary/5'
+                                  : 'border-gray-100 bg-gray-50'
+                              }`}>
+                              {u.profile_picture_url
+                                ? <img src={u.profile_picture_url} alt="" className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
+                                : <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                                    <span className="text-primary font-black text-xs">{u.name?.[0]}</span>
+                                  </div>}
+                              <span className="font-black text-gray-800 text-xs truncate">{u.name?.split(' ')[0]}</span>
+                              {award?.user_id === (u.user_id || u.id) && <span className="ml-auto text-primary text-xs">✓</span>}
+                            </motion.button>
+                          ))}
+                        </div>
+                        {isSav && <div className="mt-2 flex justify-center"><InlineSpinner size={16} /></div>}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
