@@ -4,10 +4,11 @@ const { getDb } = require('../db/database');
 const API_KEY = process.env.FOOTBALL_DATA_API_KEY || '';
 const BASE_URL = 'https://api.football-data.org/v4';
 
-// Dansk Superliga competition ID på football-data.org
-// Tier-4 plan: DSL (Superliga). Gratis plan dækker kun tier 1-3 (PL, BL, SA osv.)
-// Vi prøver DSL først, fallback til at hente alle tilgængelige kampe
-const COMPETITION = 'DSL';
+// Gratis ligaer på football-data.org:
+// PL=Premier League, BL1=Bundesliga, SA=Serie A, PD=La Liga, FL1=Ligue 1
+// CL=Champions League, EC=EM, WC=VM, DED=Eredivisie, PPL=Primeira Liga
+// DSL (Superliga) kræver BETALT plan!
+const COMPETITION = process.env.FOOTBALL_COMPETITION || 'PL'; // Default: Premier League (gratis)
 
 function fetchFootball(path) {
   return new Promise((resolve, reject) => {
