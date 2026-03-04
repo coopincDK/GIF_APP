@@ -107,7 +107,7 @@ export default function WeeklyAwardsDisplay() {
     <section className="px-4 mt-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
-        <h2 className="text-lg font-black text-gray-800">🏅 Ugens Helte</h2>
+        <h2 className="text-lg font-black text-gray-800">🏅 Ugens Helte — Vi hylder vores team</h2>
         <div className="flex items-center gap-1.5">
           {!isCurrentWeek && (
             <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
