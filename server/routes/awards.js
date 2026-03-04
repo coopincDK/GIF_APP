@@ -6,7 +6,8 @@ const { adminOnly } = require('../middleware/adminOnly');
 
 const router = express.Router();
 
-const VALID_CATEGORIES = ['fighter', 'udvikling', 'ven', 'spiller', 'fokus', 'energi'];
+// Alle gyldige kategorier (udvides løbende — ingen hård validering)
+const VALID_CATEGORIES = null; // null = accepter alle
 
 // GET /api/awards/week?week=X&year=Y  — alle kan se ugens helte
 router.get('/week', authenticateToken, async (req, res) => {
@@ -144,11 +145,14 @@ router.get('/leaderboard', authenticateToken, adminOnly, async (req, res) => {
 // POST /api/awards  — admin tildeler award
 router.post('/', authenticateToken, adminOnly, async (req, res) => {
   try {
-    const { userId, category, weekNumber, year, note } = req.body;
+    // Accepter både camelCase (userId, weekNumber) og snake_case (user_id, week_number)
+    const userId     = req.body.userId     || req.body.user_id;
+    const category   = req.body.category;
+    const weekNumber = req.body.weekNumber || req.body.week_number;
+    const year       = req.body.year;
+    const note       = req.body.note || null;
     if (!userId || !category || !weekNumber || !year)
-      return res.status(400).json({ error: 'userId, category, weekNumber og year er påkrævet' });
-    if (!VALID_CATEGORIES.includes(category))
-      return res.status(400).json({ error: `Ugyldig kategori. Gyldige: ${VALID_CATEGORIES.join(', ')}` });
+      return res.status(400).json({ error: 'user_id, category, week_number og year er påkrævet' });
 
     const db = getDb();
     const awardId = uuidv4();

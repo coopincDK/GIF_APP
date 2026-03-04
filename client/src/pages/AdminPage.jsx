@@ -366,7 +366,7 @@ function BadgesTab() {
   useEffect(() => {
     setLoading(true)
     getWeekAwards(week, year)
-      .then(r => setAwards(r.data?.awards || []))
+      .then(r => setAwards(Array.isArray(r.data) ? r.data : (r.data?.awards || [])))
       .catch(() => setAwards([]))
       .finally(() => setLoading(false))
   }, [week, year])
@@ -377,7 +377,9 @@ function BadgesTab() {
     setSaving(s => ({ ...s, [category]: true }))
     try {
       const res = await createAward({ user_id: userId, category, week_number: week, year })
-      setAwards(prev => [...prev.filter(a => a.category !== category), res.data])
+      // Backend returnerer { message, award } — udtræk award-objektet
+      const newAward = res.data?.award || res.data
+      setAwards(prev => [...prev.filter(a => a.category !== category), newAward])
       const cat = AWARD_CATEGORIES.find(c => c.key === category)
       setCelebration({ message: `${cat?.emoji} ${cat?.label} tildelt!`, stickerImg: cat?.stickerImg })
       setOpenCat(null)
