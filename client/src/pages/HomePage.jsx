@@ -8,6 +8,7 @@ import CupCountdown from '../components/ui/CupCountdown'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
 import { useAuth } from '../hooks/useAuth'
 import { useCupMode } from '../hooks/useCupMode'
+import { useFeatureFlags } from '../hooks/useFeatureFlags'
 import { getMyTasks, completeTask, requestSwap, acceptSwap } from '../api/tasks'
 import { getMyBadges } from '../api/badges'
 import toast from 'react-hot-toast'
@@ -32,6 +33,7 @@ export default function HomePage() {
   const navigate = useNavigate()
   const { user, isAdmin } = useAuth()
   const { active } = useCupMode()
+  const { flags } = useFeatureFlags()
   const [tasks, setTasks] = useState([])
   const [badges, setBadges] = useState([])
   const [loading, setLoading] = useState(true)
@@ -132,10 +134,10 @@ export default function HomePage() {
       <CoachCharacter />
 
       {/* Næste kamp/træning */}
-      <UpcomingMatch />
+      {flags.upcoming_match && <UpcomingMatch />}
 
       {/* Swap muligheder */}
-      {swapTasks.length > 0 && (
+      {flags.task_swap && swapTasks.length > 0 && (
         <section className="px-4 mt-4">
           <h3 className="font-black text-orange-600 mb-2 flex items-center gap-2">
             🔄 Nogen vil bytte!
@@ -169,23 +171,23 @@ export default function HomePage() {
         ) : (
           <div className="space-y-3">
             {activeTasks.map(t => (
-              <TaskCard key={t.id} task={t} onComplete={handleComplete} onRequestSwap={handleSwap} />
+              <TaskCard key={t.id} task={t} onComplete={handleComplete} onRequestSwap={flags.task_swap ? handleSwap : undefined} />
             ))}
           </div>
         )}
       </section>
 
       {/* Dagens Fact */}
-      <DailyFact />
+      {flags.daily_fact && <DailyFact />}
 
       {/* Superliga */}
-      <SuperligaWidget />
+      {flags.superliga_widget && <SuperligaWidget />}
 
       {/* Ugens Helte */}
-      <WeeklyAwardsDisplay />
+      {flags.weekly_awards && <WeeklyAwardsDisplay />}
 
       {/* Frivillig-board */}
-      <VolunteerBoard />
+      {flags.volunteer_board && <VolunteerBoard />}
 
       {/* Hurtig navigation */}
       <section className="px-4 mt-8 mb-4">

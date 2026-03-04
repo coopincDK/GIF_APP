@@ -142,6 +142,16 @@ CREATE TABLE IF NOT EXISTS admin_notes (
   updated_at DATETIME DEFAULT (datetime('now'))
 );
 
+-- Feature flags
+CREATE TABLE IF NOT EXISTS feature_flags (
+  flag_key TEXT PRIMARY KEY,
+  enabled INTEGER NOT NULL DEFAULT 1,
+  label TEXT NOT NULL,
+  description TEXT,
+  category TEXT NOT NULL DEFAULT 'general',
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- DBU KlubOffice cache
 CREATE TABLE IF NOT EXISTS dbu_cache (
   cache_key TEXT PRIMARY KEY,

@@ -56,6 +56,7 @@ app.use('/api/notes',      require('./routes/notes'));
 app.use('/api/history',   require('./routes/history'));
 app.use('/api/schedule',  scheduleRouter);
 app.use('/api/football', footballRouter);
+app.use('/api/features', require('./routes/featureFlags'));
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

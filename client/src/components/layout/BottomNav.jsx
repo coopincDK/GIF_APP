@@ -4,12 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Home, Trophy, Star, User, MoreHorizontal, BookOpen, Shield, X, Cpu } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { useCupMode } from '../../hooks/useCupMode'
+import { useFeatureFlags } from '../../hooks/useFeatureFlags'
 
 export default function BottomNav() {
   const navigate = useNavigate()
   const location = useLocation()
   const { isAdmin } = useAuth()
   const { active } = useCupMode()
+  const { flags } = useFeatureFlags()
   const [showMore, setShowMore] = useState(false)
 
   const isActive = (path) => location.pathname === path
@@ -64,15 +66,15 @@ export default function BottomNav() {
             </div>
 
             <div className="grid grid-cols-3 gap-3">
-              <MenuTile icon={<BookOpen size={22} />} label="Trænerens Hjørne" onClick={() => { navigate('/coach'); setShowMore(false) }} active={active} />
-              <MenuTile
+              {flags.coach_corner && <MenuTile icon={<BookOpen size={22} />} label="Trænerens Hjørne" onClick={() => { navigate('/coach'); setShowMore(false) }} active={active} />}
+              {flags.cup_mode && <MenuTile
                 icon={<span className="text-2xl">⚽</span>}
                 label="Kattegat Cup"
                 badge={!active ? 'SNART' : undefined}
                 highlight={active}
                 onClick={() => { navigate('/cup'); setShowMore(false) }}
                 active={active}
-              />
+              />}
               {isAdmin && (
                 <MenuTile icon={<Shield size={22} />} label="Admin" onClick={() => { navigate('/admin'); setShowMore(false) }} active={active} />
               )}
@@ -88,12 +90,12 @@ export default function BottomNav() {
       >
         <div className="flex items-center justify-around py-3">
           <NavBtn path="/" icon="🏠" label="Hjem" onClick={() => navigate('/')} isActive={isActive('/')} active={active} />
-          {isAdmin && (
+          {isAdmin && flags.spin_wheel && (
             <NavBtn path="/spin" icon="🎡" label="Hjul" onClick={() => navigate('/spin')} isActive={isActive('/spin')} active={active} />
           )}
-          <NavBtn path="/schedule" icon="📅" label="Program" onClick={() => navigate('/schedule')} isActive={isActive('/schedule')} active={active} />
-          <NavBtn path="/treasure" icon="💎" label="Skattekiste" onClick={() => navigate('/treasure')} isActive={isActive('/treasure')} active={active} />
-          <NavBtn path="/team" icon="🌟" label="Hold" onClick={() => navigate('/team')} isActive={isActive('/team')} active={active} />
+          {flags.schedule && <NavBtn path="/schedule" icon="📅" label="Program" onClick={() => navigate('/schedule')} isActive={isActive('/schedule')} active={active} />}
+          {flags.badges && <NavBtn path="/treasure" icon="💎" label="Skattekiste" onClick={() => navigate('/treasure')} isActive={isActive('/treasure')} active={active} />}
+          {flags.team_page && <NavBtn path="/team" icon="🌟" label="Hold" onClick={() => navigate('/team')} isActive={isActive('/team')} active={active} />}
           <NavBtn path="/profile" icon="👤" label="Profil" onClick={() => navigate('/profile')} isActive={isActive('/profile')} active={active} />
           <button
             onClick={() => setShowMore(true)}

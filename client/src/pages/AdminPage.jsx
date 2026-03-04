@@ -20,6 +20,7 @@ import { getUsers } from '../api/users'
 import AdminNotesTab from './admin/AdminNotesTab'
 import AdminHistoryTab from './admin/AdminHistoryTab'
 import AdminGuideTab from './admin/AdminGuideTab'
+import AdminFeaturesTab from './admin/AdminFeaturesTab'
 
 const TABS = [
   { id: 'settings', label: '⚙️ Indstillinger' },
@@ -31,6 +32,7 @@ const TABS = [
   { id: 'notes', label: '📝 Kladde' },
   { id: 'history', label: '📊 Historik' },
   { id: 'guide', label: '📖 Guide' },
+  { id: 'features', label: '🎛️ Features' },
 ]
 
 // ─── Cup-Mode Override Selector ───────────────────────────────────────────────
@@ -532,6 +534,7 @@ export default function AdminPage() {
             {activeTab === 'notes' && <AdminNotesTab />}
             {activeTab === 'history' && <AdminHistoryTab />}
             {activeTab === 'guide' && <AdminGuideTab />}
+            {activeTab === 'features' && <AdminFeaturesTab />}
           </motion.div>
         </AnimatePresence>
       </div>

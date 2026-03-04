@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { useAuth } from './hooks/useAuth'
 import LoadingSpinner from './components/ui/LoadingSpinner'
+import { FeatureFlagsProvider } from './hooks/useFeatureFlags'
 import AppShell from './components/layout/AppShell'
 
 import LoginPage from './pages/LoginPage'
@@ -41,6 +42,7 @@ function PublicRoute({ children }) {
 
 export default function App() {
   return (
+    <FeatureFlagsProvider>
     <AnimatePresence mode="wait">
       <Routes>
         {/* Public — ingen AppShell */}
@@ -65,5 +67,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>
+    </FeatureFlagsProvider>
   )
 }

@@ -6,6 +6,38 @@ const { adminOnly } = require('../middleware/adminOnly');
 
 const router = express.Router();
 
+// GET /api/badges/my — egne badges (bruger fra JWT)
+router.get('/my', authenticateToken, async (req, res) => {
+  try {
+    const db = getDb();
+    const badges = (await db.execute({
+      sql: `SELECT ub.user_badge_id, ub.date_awarded, b.*
+            FROM user_badges ub
+            JOIN badges b ON ub.badge_id = b.badge_id
+            WHERE ub.user_id = ? ORDER BY ub.date_awarded DESC`,
+      args: [req.user.user_id]
+    })).rows;
+    res.json(badges);
+  } catch (err) { res.status(500).json({ error: 'Serverfejl' }); }
+});
+
+// GET /api/badges/team — alle badges for holdet (ingen teamId param)
+router.get('/team', authenticateToken, async (req, res) => {
+  try {
+    const db = getDb();
+    const badges = (await db.execute({
+      sql: `SELECT ub.user_badge_id, ub.date_awarded, b.badge_id, b.name, b.description, b.image_url, b.type,
+                   u.user_id, u.name as user_name, u.profile_picture_url
+            FROM user_badges ub
+            JOIN badges b ON ub.badge_id = b.badge_id
+            JOIN users u ON ub.user_id = u.user_id
+            WHERE u.team_id = ? ORDER BY ub.date_awarded DESC`,
+      args: [req.user.team_id]
+    })).rows;
+    res.json(badges);
+  } catch (err) { res.status(500).json({ error: 'Serverfejl' }); }
+});
+
 // GET /api/badges
 router.get('/', authenticateToken, async (req, res) => {
   try {

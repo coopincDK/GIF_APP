@@ -194,6 +194,39 @@ async function seed() {
   await db.execute({ sql: "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('cup_mode_override', 'auto')", args: [] });
   console.log('✅ App settings seedet');
 
+  // ── Feature flags ──────────────────────────────────────────────────────────
+  const defaultFlags = [
+    // Kerne
+    { key: 'spin_wheel',       label: '🎡 Tøjvask-hjul',         description: 'Spin-hjulet til tøjvask-fordeling',         category: 'core',     enabled: 1 },
+    { key: 'volunteer_board',  label: '🙋 Frivillig-board',       description: 'Forældre kan melde sig til frugt/kage/kørsel', category: 'core',   enabled: 1 },
+    { key: 'task_swap',        label: '🔄 Opgave-bytte',          description: 'Spillere kan tilbyde opgaver til bytte',     category: 'core',     enabled: 1 },
+    // Hold & spillere
+    { key: 'weekly_awards',    label: '🏅 Ugens Helte',           description: 'Ugentlige helte-titler efter kamp',          category: 'team',     enabled: 1 },
+    { key: 'badges',           label: '💎 Badges & Skattekiste',  description: 'Badge-system og skattekiste-side',           category: 'team',     enabled: 1 },
+    { key: 'team_page',        label: '🌟 Hold-siden',            description: 'Vis hele holdet med spillerkort',            category: 'team',     enabled: 1 },
+    { key: 'leaderboard',      label: '📊 Point-historik',        description: 'Leaderboard og historik (kun admin)',        category: 'team',     enabled: 1 },
+    // Indhold
+    { key: 'daily_fact',       label: '💡 Dagens Fact/Joke',      description: 'Roterende facts og vittigheder på forsiden', category: 'content',  enabled: 1 },
+    { key: 'coach_corner',     label: '📚 Trænerens Hjørne',      description: 'Regler og fakta-side',                       category: 'content',  enabled: 1 },
+    // Kampprogram
+    { key: 'schedule',         label: '📅 Kampprogram',           description: 'DBU kampprogram og træningsplan',            category: 'schedule', enabled: 1 },
+    { key: 'upcoming_match',   label: '🏃 Næste kamp (forside)',  description: 'Vis næste kamp/træning på forsiden',         category: 'schedule', enabled: 1 },
+    { key: 'superliga_widget', label: '🏆 Superliga-widget',      description: 'Superliga resultater og stilling',           category: 'schedule', enabled: 1 },
+    // Cup
+    { key: 'cup_mode',         label: '🏆 Kattegat Cup',          description: 'Cup-mode, nedtælling og Cup-vagter',         category: 'cup',      enabled: 1 },
+  ];
+
+  for (const flag of defaultFlags) {
+    const exists = (await db.execute({ sql: 'SELECT 1 FROM feature_flags WHERE flag_key = ?', args: [flag.key] })).rows[0];
+    if (!exists) {
+      await db.execute({
+        sql: `INSERT INTO feature_flags (flag_key, enabled, label, description, category) VALUES (?, ?, ?, ?, ?)`,
+        args: [flag.key, flag.enabled, flag.label, flag.description, flag.category]
+      });
+    }
+  }
+  console.log('✅ Feature flags seedet');
+
   console.log('\n🎉 Seed færdig! Demo-login:');
   console.log('   Admin:  admin@grenaaif.dk  / GrenaaIF2026!');
   console.log('   Bruger: mette@test.dk      / Test1234!');
