@@ -189,38 +189,35 @@ router.post('/spin/confirm', authenticateToken, adminOnly, async (req, res) => {
     const db = getDb();
     for (const assignment of assignments) {
       let { task_id, user_id, userId, taskType } = assignment;
-      // Normaliser user_id (frontend sender både userId og user_id)
+      // Normaliser user_id
       user_id = user_id || userId;
       if (!user_id) continue;
 
-      // Hvis ingen task_id: find eller opret en tøjvask-opgave
-      if (!task_id) {
-        const type = taskType || 'tøjvask';
-        // Find eksisterende åben opgave af denne type
-        const existing = (await db.execute({
-          sql: `SELECT task_id FROM tasks WHERE type = ? AND status = 'pending' LIMIT 1`,
-          args: [type]
-        })).rows[0];
+      // Normaliser taskType: 'laundry' -> 'tøjvask'
+      const typeMap = { laundry: 'tøjvask', frugt: 'frugt', kage: 'kage' };
+      const type = typeMap[taskType] || taskType || 'tøjvask';
 
-        if (existing) {
-          task_id = existing.task_id;
-        } else {
-          // Opret ny opgave automatisk
-          task_id = uuidv4();
-          await db.execute({
-            sql: `INSERT INTO tasks (task_id, title, description, type, status) VALUES (?, ?, ?, ?, 'pending')`,
-            args: [task_id, 'Tøjvask', 'Vask og tør trøjer efter kamp', type]
-          });
-        }
+      // Hent brugerens team_id
+      const userRow = (await db.execute({
+        sql: 'SELECT team_id FROM users WHERE user_id = ?',
+        args: [user_id]
+      })).rows[0];
+      const team_id = userRow?.team_id || null;
+
+      // Hvis ingen task_id: opret altid en ny opgave per spin (undgå konflikter)
+      if (!task_id) {
+        task_id = uuidv4();
+        const weekLabel = new Date().toISOString().slice(0, 10);
+        await db.execute({
+          sql: `INSERT INTO tasks (task_id, title, description, type, status, team_id, due_date) VALUES (?, ?, ?, ?, 'assigned', ?, ?)`,
+          args: [task_id, 'Tøjvask', 'Vask og tør trøjer efter kamp', type, team_id, weekLabel]
+        });
       }
 
+      // INSERT OR IGNORE undgår crash ved dubletter
       await db.execute({
-        sql: 'INSERT INTO task_assignments (assignment_id, task_id, user_id) VALUES (?, ?, ?)',
+        sql: 'INSERT OR IGNORE INTO task_assignments (assignment_id, task_id, user_id) VALUES (?, ?, ?)',
         args: [uuidv4(), task_id, user_id]
-      });
-      await db.execute({
-        sql: `UPDATE tasks SET status = 'assigned' WHERE task_id = ?`,
-        args: [task_id]
       });
     }
     res.json({ message: 'Opgaver fordelt! 🎉', count: assignments.length });
