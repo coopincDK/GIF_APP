@@ -17,6 +17,7 @@ import {
 } from '../api/admin'
 import { getRules, getFacts, createRule, deleteRule, createFact, deleteFact } from '../api/content'
 import { getUsers } from '../api/users'
+import { getWeekAwards, createAward, deleteAward } from '../api/awards'
 import AdminNotesTab from './admin/AdminNotesTab'
 import AdminHistoryTab from './admin/AdminHistoryTab'
 import AdminGuideTab from './admin/AdminGuideTab'

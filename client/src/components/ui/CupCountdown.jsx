@@ -32,7 +32,7 @@ export default function CupCountdown({ compact = false }) {
         transition={{ repeat: Infinity, duration: 2 }}
         className="cup-gradient rounded-2xl p-3 flex items-center gap-3"
       >
-        <span className="text-3xl">🏆</span>
+        <img src="/assets/kattegat-cup-logo-ny-blaa.png" alt="Kattegat Cup" className="w-10 h-10 object-contain flex-shrink-0" />
         <div>
           <p className="text-yellow-300 font-black text-sm">Kattegat Cup</p>
           <p className="text-white font-black text-xl leading-none">{timeLeft.days} dage!</p>
@@ -48,13 +48,13 @@ export default function CupCountdown({ compact = false }) {
       className="cup-gradient rounded-3xl p-5 mx-4 my-3 shadow-xl"
     >
       <div className="flex items-center justify-center gap-2 mb-3">
-        <motion.span
-          animate={{ rotate: [0, 10, -10, 0] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          className="text-4xl"
-        >
-          🏆
-        </motion.span>
+        <motion.img
+          src="/assets/kattegat-cup-logo-ny-blaa.png"
+          alt="Kattegat Cup"
+          animate={{ rotate: [0, 5, -5, 0], scale: [1, 1.05, 1] }}
+          transition={{ repeat: Infinity, duration: 3 }}
+          className="w-16 h-16 object-contain drop-shadow-lg"
+        />
         <div className="text-center">
           <p className="text-yellow-300 font-black text-xs uppercase tracking-wider">Kattegat Cup 2026</p>
           <p className="text-white font-black text-lg leading-tight">Nedtælling!</p>

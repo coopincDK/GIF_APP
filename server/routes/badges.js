@@ -6,6 +6,52 @@ const { adminOnly } = require('../middleware/adminOnly');
 
 const router = express.Router();
 
+// GET /api/badges/my/timeline — brugerens fulde badge-historik med uger
+router.get('/my/timeline', authenticateToken, async (req, res) => {
+  try {
+    const db = getDb();
+    const userId = req.user.user_id;
+
+    // Badges (user_badges)
+    const badges = (await db.execute({
+      sql: `SELECT ub.user_badge_id, ub.date_awarded,
+                   b.badge_id, b.name, b.description, b.image_url, b.type
+            FROM user_badges ub
+            JOIN badges b ON ub.badge_id = b.badge_id
+            WHERE ub.user_id = ?
+            ORDER BY ub.date_awarded DESC`,
+      args: [userId]
+    })).rows;
+
+    // Weekly awards (ugens helte)
+    const awards = (await db.execute({
+      sql: `SELECT wa.award_id, wa.category, wa.week_number, wa.year, wa.note, wa.created_at,
+                   ab.name as awarded_by_name
+            FROM weekly_awards wa
+            LEFT JOIN users ab ON wa.awarded_by = ab.user_id
+            WHERE wa.user_id = ?
+            ORDER BY wa.year DESC, wa.week_number DESC`,
+      args: [userId]
+    })).rows;
+
+    // Frivillig-historik (bekræftede)
+    const volunteer = (await db.execute({
+      sql: `SELECT signup_id, volunteer_type, match_date, confirmed_at
+            FROM volunteer_signups
+            WHERE user_id = ? AND confirmed = 1
+            ORDER BY match_date DESC`,
+      args: [userId]
+    })).rows;
+
+    // Samlet score: 1 pt per badge + 1 pt per award + 1 pt per frivillig
+    const totalScore = badges.length + awards.length + volunteer.length;
+
+    res.json({ badges, awards, volunteer, totalScore });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/badges/my — egne badges (bruger fra JWT)
 router.get('/my', authenticateToken, async (req, res) => {
   try {

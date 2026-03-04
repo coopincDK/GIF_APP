@@ -147,8 +147,8 @@ router.put('/:signupId/confirm', authenticateToken, adminOnly, async (req, res) 
       args: [req.user.user_id, req.params.signupId],
     });
 
-    // Tildel badge
-    const newBadge = await awardVolunteerBadge(db, signup.user_id);
+    // Tildel type-specifikt badge
+    const newBadge = await awardVolunteerBadge(db, signup.user_id, signup.volunteer_type);
 
     const updated = (await db.execute({
       sql: `SELECT vs.*, u.name as user_name FROM volunteer_signups vs

@@ -74,7 +74,8 @@ CREATE TABLE IF NOT EXISTS content (
   title TEXT NOT NULL,
   body_text TEXT,
   image_url TEXT,
-  sort_order INTEGER DEFAULT 0
+  sort_order INTEGER DEFAULT 0,
+  created_by TEXT REFERENCES users(user_id)
 );
 
 -- Cup Shifts (Kattegat Cup vagter)

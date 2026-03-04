@@ -78,6 +78,69 @@ router.get('/stats/year', authenticateToken, adminOnly, async (req, res) => {
   }
 });
 
+// GET /api/awards/leaderboard — samlet point-oversigt (admin only)
+router.get('/leaderboard', authenticateToken, adminOnly, async (req, res) => {
+  try {
+    const db = getDb();
+    const teamId = req.user.team_id;
+
+    // Alle brugere på holdet
+    const users = (await db.execute({
+      sql: `SELECT user_id, name, profile_picture_url FROM users WHERE team_id = ? AND role = 'user' ORDER BY name`,
+      args: [teamId]
+    })).rows;
+
+    const result = [];
+    for (const user of users) {
+      const badgeCount = (await db.execute({
+        sql: `SELECT COUNT(*) as c FROM user_badges WHERE user_id = ?`,
+        args: [user.user_id]
+      })).rows[0].c;
+
+      const awardCount = (await db.execute({
+        sql: `SELECT COUNT(*) as c FROM weekly_awards WHERE user_id = ?`,
+        args: [user.user_id]
+      })).rows[0].c;
+
+      const volunteerCount = (await db.execute({
+        sql: `SELECT COUNT(*) as c FROM volunteer_signups WHERE user_id = ? AND confirmed = 1`,
+        args: [user.user_id]
+      })).rows[0].c;
+
+      const laundryCount = (await db.execute({
+        sql: `SELECT COUNT(*) as c FROM task_assignments ta
+              JOIN tasks t ON ta.task_id = t.task_id
+              WHERE ta.user_id = ? AND t.type = 'tøjvask'`,
+        args: [user.user_id]
+      })).rows[0].c;
+
+      // Seneste award
+      const latestAward = (await db.execute({
+        sql: `SELECT category, week_number, year FROM weekly_awards WHERE user_id = ? ORDER BY year DESC, week_number DESC LIMIT 1`,
+        args: [user.user_id]
+      })).rows[0];
+
+      result.push({
+        user_id: user.user_id,
+        name: user.name,
+        profile_picture_url: user.profile_picture_url,
+        badge_count: Number(badgeCount),
+        award_count: Number(awardCount),
+        volunteer_count: Number(volunteerCount),
+        laundry_count: Number(laundryCount),
+        total_score: Number(badgeCount) + Number(awardCount) + Number(volunteerCount),
+        latest_award: latestAward || null,
+      });
+    }
+
+    // Sorter efter total score
+    result.sort((a, b) => b.total_score - a.total_score);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/awards  — admin tildeler award
 router.post('/', authenticateToken, adminOnly, async (req, res) => {
   try {

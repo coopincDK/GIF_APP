@@ -74,6 +74,16 @@ export default function HomePage() {
     } catch { toast.error('Kunne ikke sende bytteforespørgsel') }
   }
 
+  const handleAcceptSwap = async (id) => {
+    try {
+      await acceptSwap(id)
+      toast.success('Du har overtaget opgaven! 💪')
+      // Fjern opgaven fra swap-listen og genindlæs
+      setTasks(t => t.filter(x => x.id !== id))
+      loadData()
+    } catch (e) { toast.error(e?.response?.data?.error || 'Kunne ikke overtage opgaven') }
+  }
+
   const myTasks     = tasks.filter(t => t.assigned_to === user?.user_id && !t.completion_date)
   const activeTasks  = myTasks.filter(t => t.status !== 'completed')
   // Swap-opgaver = opgaver fra ANDRE der har tilbudt bytte
@@ -144,7 +154,7 @@ export default function HomePage() {
           </h3>
           <div className="space-y-2">
             {swapTasks.map(t => (
-              <TaskCard key={t.id} task={t} onAcceptSwap={handleSwap} />
+              <TaskCard key={t.id} task={t} onAcceptSwap={handleAcceptSwap} />
             ))}
           </div>
         </section>

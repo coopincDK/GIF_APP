@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import api from '../../api/axios'
+import { getLeaderboard } from '../../api/awards'
 
 const AWARD_LABELS = {
   fighter: { emoji: '⚔️', label: 'Ugens Fighter' },
@@ -17,6 +18,11 @@ export default function AdminHistoryTab() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeSection, setActiveSection] = useState('leaderboard')
+  const [leaderboard, setLeaderboard] = useState([])
+
+  useEffect(() => {
+    getLeaderboard().then(r => setLeaderboard(r.data || [])).catch(() => {})
+  }, [])
 
   useEffect(() => {
     api.get('/history')
@@ -38,11 +44,11 @@ export default function AdminHistoryTab() {
   ;(data?.laundry || []).forEach(l => addPoint(l.name))
   ;(data?.volunteers || []).forEach(v => addPoint(v.user_name))
 
-  const leaderboard = Object.entries(pointMap)
+  const pointLeaderboard = Object.entries(pointMap)
     .map(([name, points]) => ({ name, points }))
     .sort((a, b) => b.points - a.points)
 
-  const maxPoints = leaderboard[0]?.points || 1
+  const maxPoints = pointLeaderboard[0]?.points || 1
 
   const SECTIONS = [
     { id: 'leaderboard', label: '🏆 Point' },
@@ -53,6 +59,53 @@ export default function AdminHistoryTab() {
 
   return (
     <div className="space-y-4">
+      {/* ── Leaderboard ── */}
+      {leaderboard.length > 0 && (
+        <section className="mb-6">
+          <h2 className="font-black text-gray-800 text-lg mb-3">🏆 Samlet leaderboard</h2>
+          <div className="space-y-2">
+            {leaderboard.map((p, i) => (
+              <motion.div key={p.user_id}
+                initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+                className={`bg-white rounded-2xl shadow-sm p-3 flex items-center gap-3 border-2 ${
+                  i === 0 ? 'border-yellow-300' : i === 1 ? 'border-gray-300' : i === 2 ? 'border-orange-300' : 'border-transparent'
+                }`}>
+                {/* Placering */}
+                <div className="w-8 text-center flex-shrink-0">
+                  <span className="font-black text-lg">
+                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : <span className="text-gray-400 text-sm">{i+1}</span>}
+                  </span>
+                </div>
+                {/* Avatar */}
+                {p.profile_picture_url
+                  ? <img src={p.profile_picture_url} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                  : <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                      <span className="font-black text-primary">{p.name?.[0]}</span>
+                    </div>}
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="font-black text-gray-800 text-sm">{p.name}</p>
+                  <div className="flex gap-2 mt-0.5">
+                    <span className="text-[10px] font-bold text-yellow-600">🏅 {p.award_count}</span>
+                    <span className="text-[10px] font-bold text-blue-500">💎 {p.badge_count}</span>
+                    <span className="text-[10px] font-bold text-green-500">🙋 {p.volunteer_count}</span>
+                    <span className="text-[10px] font-bold text-gray-400">🧴 {p.laundry_count}</span>
+                  </div>
+                </div>
+                {/* Total */}
+                <div className="flex-shrink-0 text-right">
+                  <p className="font-black text-primary text-lg">{p.total_score}</p>
+                  <p className="text-[10px] font-bold text-gray-400">point</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          <p className="text-[10px] font-semibold text-gray-400 text-center mt-2">
+            Point: 1 per titel + 1 per badge + 1 per frivillig-indsats
+          </p>
+        </section>
+      )}
+
       {/* Sektion-tabs */}
       <div className="flex gap-1.5 overflow-x-auto pb-1">
         {SECTIONS.map(s => (
@@ -73,12 +126,12 @@ export default function AdminHistoryTab() {
             <p className="text-gray-600 text-xs font-semibold">1 point per titel (Ugens Helt, Fighter, Ven, Udvikling) + 1 point per tøjvask + 1 point per frivillig-opgave</p>
           </div>
 
-          {leaderboard.length === 0 ? (
+          {pointLeaderboard.length === 0 ? (
             <div className="text-center py-8 bg-white rounded-2xl shadow-sm">
               <div className="text-4xl mb-2">📊</div>
               <p className="font-black text-gray-500">Ingen data endnu</p>
             </div>
-          ) : leaderboard.map((p, i) => (
+          ) : pointLeaderboard.map((p, i) => (
             <motion.div key={p.name} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
               className="bg-white rounded-2xl shadow-sm p-4">
               <div className="flex items-center gap-3 mb-2">

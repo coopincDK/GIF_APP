@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import Badge from '../components/ui/Badge'
 import BadgeUnlock from '../components/ui/BadgeUnlock'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
-import { getMyBadges, getAllBadges } from '../api/badges'
+import { getMyBadges, getAllBadges, getMyTimeline } from '../api/badges'
 
 const container = {
   hidden: {},
@@ -19,6 +19,11 @@ export default function TreasurePage() {
   const [all, setAll] = useState([])
   const [loading, setLoading] = useState(true)
   const [newBadge, setNewBadge] = useState(null)
+  const [timeline, setTimeline] = useState(null)
+
+  useEffect(() => {
+    getMyTimeline().then(r => setTimeline(r.data)).catch(() => {})
+  }, [])
 
   useEffect(() => {
     Promise.all([getMyBadges(), getAllBadges()])
@@ -113,6 +118,103 @@ export default function TreasurePage() {
           </div>
         )}
       </div>
+
+      {/* ── Timeline ── */}
+      {timeline && (
+        <section className="px-4 mt-6 pb-8">
+          <h2 className="text-lg font-black text-gray-800 mb-3">📅 Min historik</h2>
+
+          {/* Ugens Helte awards */}
+          {timeline.awards?.length > 0 && (
+            <div className="mb-4">
+              <h3 className="font-black text-gray-600 text-sm mb-2">🏅 Ugens Helte</h3>
+              <div className="space-y-2">
+                {timeline.awards.map((a, i) => (
+                  <motion.div key={a.award_id || i}
+                    initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
+                    className="bg-white rounded-2xl shadow-sm p-3 flex items-center gap-3 border border-gray-100">
+                    <div className="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <span className="text-xl">🏅</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-black text-gray-800 text-sm capitalize">{a.category?.replace(/_/g, ' ')}</p>
+                      <p className="text-gray-400 text-xs font-semibold">Uge {a.week_number}, {a.year}</p>
+                      {a.note && <p className="text-gray-500 text-xs italic mt-0.5">"{a.note}"</p>}
+                    </div>
+                    {a.awarded_by_name && (
+                      <span className="text-[10px] font-bold text-gray-300 flex-shrink-0">fra {a.awarded_by_name}</span>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Badges timeline */}
+          {timeline.badges?.length > 0 && (
+            <div className="mb-4">
+              <h3 className="font-black text-gray-600 text-sm mb-2">💎 Badges optjent</h3>
+              <div className="space-y-2">
+                {timeline.badges.map((b, i) => (
+                  <motion.div key={b.user_badge_id || i}
+                    initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
+                    className="bg-white rounded-2xl shadow-sm p-3 flex items-center gap-3 border border-gray-100">
+                    <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                      {b.image_url
+                        ? <img src={b.image_url} alt="" className="w-8 h-8 object-contain" />
+                        : <span className="text-xl">💎</span>}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-black text-gray-800 text-sm">{b.name}</p>
+                      <p className="text-gray-400 text-xs font-semibold">{b.description}</p>
+                    </div>
+                    <span className="text-[10px] font-bold text-gray-300 flex-shrink-0">
+                      {new Date(b.date_awarded).toLocaleDateString('da-DK', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Frivillig historik */}
+          {timeline.volunteer?.length > 0 && (
+            <div>
+              <h3 className="font-black text-gray-600 text-sm mb-2">🙋 Frivillig-indsats</h3>
+              <div className="space-y-2">
+                {timeline.volunteer.map((v, i) => {
+                  const typeLabel = { frugt: '🍎 Frugt', kage: '🎂 Kage', koersel: '🚗 Kørsel', fotos: '📸 Fotos' }
+                  return (
+                    <motion.div key={v.signup_id || i}
+                      initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
+                      className="bg-white rounded-2xl shadow-sm p-3 flex items-center gap-3 border border-gray-100">
+                      <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <span className="text-xl">{typeLabel[v.volunteer_type]?.split(' ')[0] || '🙋'}</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-black text-gray-800 text-sm">{typeLabel[v.volunteer_type] || v.volunteer_type}</p>
+                        <p className="text-gray-400 text-xs font-semibold">
+                          {new Date(v.match_date).toLocaleDateString('da-DK', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                      </div>
+                      <span className="text-green-500 font-black text-xs">✓ Bekræftet</span>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Tom state */}
+          {timeline.awards?.length === 0 && timeline.badges?.length === 0 && timeline.volunteer?.length === 0 && (
+            <div className="text-center py-8 bg-white rounded-3xl shadow-sm">
+              <span className="text-4xl block mb-2">🌱</span>
+              <p className="font-black text-gray-500">Din historik er tom endnu</p>
+              <p className="text-gray-400 text-sm font-semibold mt-1">Deltag og gør en forskel! 💪</p>
+            </div>
+          )}
+        </section>
+      )}
     </div>
   )
 }

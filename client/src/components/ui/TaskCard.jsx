@@ -60,7 +60,7 @@ export default function TaskCard({ task, onComplete, onRequestSwap, onAcceptSwap
               Udført!
             </motion.button>
           )}
-          {onRequestSwap && task?.status !== 'swap_requested' && (
+          {onRequestSwap && task?.status !== 'swap_requested' && !task?.is_swap_offered && (
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => onRequestSwap(task.id)}
@@ -70,7 +70,7 @@ export default function TaskCard({ task, onComplete, onRequestSwap, onAcceptSwap
               Bytte?
             </motion.button>
           )}
-          {onAcceptSwap && task?.status === 'swap_requested' && (
+          {onAcceptSwap && (task?.status === 'swap_requested' || task?.is_swap_offered) && (
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => onAcceptSwap(task.id)}

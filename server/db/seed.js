@@ -53,14 +53,29 @@ async function seed() {
 
   // ── Badges ────────────────────────────────────────────────────────────────
   const badgesData = [
-    { name: 'Hold-Helt',           description: 'Fuldført en holdopgave!',             image_url: '/assets/stickers/16_vaskemaskine.png', type: 'liga' },
-    { name: 'Frugt-Helt',          description: 'Medbragt frugt til holdet!',           image_url: '/assets/stickers/17_frugtskaal.png',   type: 'liga' },
-    { name: 'Kage-Helt',           description: 'Medbragt kage til holdet!',            image_url: '/assets/stickers/07_guldpokal.png',    type: 'liga' },
-    { name: 'Cup-Stjerne',         description: 'Frivillig ved Kattegat Cup!',          image_url: '/assets/stickers/23_kattegat_cup.png', type: 'cup' },
-    { name: 'Jubilæums-Helt 2026', description: 'Bidrog til 40-års jubilæumsstævnet!', image_url: '/assets/stickers/27_medalje.png',      type: 'jubilæum' },
-    { name: 'High Five',           description: 'Givet en holdkammerat en high five!',  image_url: '/assets/stickers/04_high_five.png',    type: 'liga' },
-    { name: 'Trænings-Helt',       description: 'Mødt til træning med godt humør!',     image_url: '/assets/stickers/13_sved_traening.png',type: 'liga' },
-    { name: 'Ild-Spiller',         description: 'Vist ekstra energi på banen!',         image_url: '/assets/stickers/15_ild_fart.png',     type: 'liga' },
+    // Holdopgaver
+    { name: 'Hold-Helt',           description: 'Fuldført en holdopgave!',              image_url: '/assets/stickers/16_vaskemaskine.png',  type: 'liga' },
+    { name: 'Frivillig-Helt',      description: 'Hjælper holdet frivilligt!',            image_url: '/assets/stickers/26_hjerte_hold.png',   type: 'liga' },
+    // Volunteer-specifikke
+    { name: 'Frugt-Helt',          description: 'Medbragt frugt til holdet!',            image_url: '/assets/stickers/17_frugtskaal.png',    type: 'liga' },
+    { name: 'Kage-Helt',           description: 'Medbragt kage til holdet!',             image_url: '/assets/stickers/03_maal_jubel.png',    type: 'liga' },
+    { name: 'Chauffor-Helt',       description: 'Kørt holdkammerater til kamp!',         image_url: '/assets/stickers/21_sol_kamp.png',      type: 'liga' },
+    { name: 'Foto-Helt',           description: 'Fotograferet kampe og træning!',        image_url: '/assets/stickers/12_stjaerne_oejne.png',type: 'liga' },
+    // Cup
+    { name: 'Cup-Stjerne',         description: 'Frivillig ved Kattegat Cup!',           image_url: '/assets/stickers/23_kattegat_cup.png',  type: 'cup' },
+    { name: 'Jubilæums-Helt 2026', description: 'Bidrog til 40-års jubilæumsstævnet!',  image_url: '/assets/stickers/27_medalje.png',       type: 'jubilæum' },
+    // Klassiske
+    { name: 'High Five',           description: 'Givet en holdkammerat en high five!',   image_url: '/assets/stickers/04_high_five.png',     type: 'liga' },
+    { name: 'Trænings-Helt',       description: 'Mødt til træning med godt humør!',      image_url: '/assets/stickers/13_sved_traening.png', type: 'liga' },
+    { name: 'Ild-Spiller',         description: 'Vist ekstra energi på banen!',          image_url: '/assets/stickers/15_ild_fart.png',      type: 'liga' },
+    { name: 'Mål-Maskine',         description: 'Scoret mål og fejret med holdet!',      image_url: '/assets/stickers/03_maal_jubel.png',    type: 'liga' },
+    { name: 'Keeper-Klippe',       description: 'Reddet bolden i målet!',                image_url: '/assets/stickers/02_keeper_redning.png',type: 'liga' },
+    { name: 'Assist-Konge',        description: 'Lagt op til mål med præcis aflevering!', image_url: '/assets/stickers/28_hjoernespark.png',  type: 'liga' },
+    { name: 'Holdets Stjerne',     description: 'Ugens allerbedste spiller!',            image_url: '/assets/stickers/24_nummer_et.png',     type: 'liga' },
+    { name: 'Kampens Kriger',      description: 'Kæmpede til det sidste!',               image_url: '/assets/stickers/07_guldpokal.png',     type: 'liga' },
+    { name: 'Taktiker',            description: 'Spillede klogt og taktisk!',            image_url: '/assets/stickers/14_taenker.png',       type: 'liga' },
+    { name: 'Holdets Hjerte',      description: 'Holdt holdet samlet med godt humør!',   image_url: '/assets/stickers/18_hold_kram.png',     type: 'liga' },
+    { name: 'Jubel-Mester',        description: 'Fejrede med hele holdet!',              image_url: '/assets/stickers/25_konfetti.png',      type: 'liga' },
   ];
 
   const badgeIds = {};
