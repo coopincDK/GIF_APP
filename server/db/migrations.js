@@ -78,6 +78,16 @@ const MIGRATIONS = [
   //     await db.execute('ALTER TABLE ...');
   //   },
   // },
+  {
+    version: 7,
+    description: 'Tilføj player_name til invite_tokens',
+    up: async (db) => {
+      const cols = (await db.execute('PRAGMA table_info(invite_tokens)')).rows;
+      if (!cols.some(c => c.name === 'player_name')) {
+        await db.execute({ sql: 'ALTER TABLE invite_tokens ADD COLUMN player_name TEXT', args: [] });
+      }
+    },
+  },
 ];
 
 /**

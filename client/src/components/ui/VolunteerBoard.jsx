@@ -11,17 +11,32 @@ const TYPES = [
   { id: 'fotos',   label: 'Fotos',     emoji: '📸', desc: 'Tag billeder' },
 ]
 
-function getNextSaturday() {
-  const d = new Date()
-  const diff = (6 - d.getDay() + 7) % 7 || 7
-  d.setDate(d.getDate() + diff)
-  return d.toISOString().split('T')[0]
+function getISOWeek(date) {
+  const d = new Date(date); d.setHours(0,0,0,0)
+  d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7)
+  const w1 = new Date(d.getFullYear(), 0, 4)
+  return 1 + Math.round(((d - w1) / 86400000 - 3 + (w1.getDay() + 6) % 7) / 7)
+}
+
+function getWeekStart(week, year) {
+  // Mandag i den givne uge
+  const jan4 = new Date(year, 0, 4)
+  const dayOfWeek = (jan4.getDay() + 6) % 7
+  const monday = new Date(jan4)
+  monday.setDate(jan4.getDate() - dayOfWeek + (week - 1) * 7)
+  return monday.toISOString().split('T')[0]
+}
+
+function getCurrentWeek() {
+  return getISOWeek(new Date())
 }
 
 export default function VolunteerBoard() {
   const { user } = useAuth()
-  const [matchDate, setMatchDate] = useState(getNextSaturday())
-  const [grouped, setGrouped] = useState({})
+  const [week, setWeek]     = useState(getCurrentWeek())
+  const [year]              = useState(new Date().getFullYear())
+  const matchDate           = getWeekStart(week, year)
+  const [grouped, setGrouped]   = useState({})
   const [mySignups, setMySignups] = useState({})
 
   const fetchData = () => {
@@ -68,12 +83,19 @@ export default function VolunteerBoard() {
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-black text-gray-800">🙋 Hvem hjælper til?</h2>
-        <input
-          type="date"
-          value={matchDate}
-          onChange={e => setMatchDate(e.target.value)}
-          className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-full border-0 outline-none"
-        />
+        <div className="flex items-center gap-1 bg-gray-100 rounded-full px-2 py-1">
+          <button onClick={() => setWeek(w => Math.max(1, w - 1))}
+            className="font-black text-gray-500 text-sm w-5 text-center leading-none">
+            ‹
+          </button>
+          <span className="text-xs font-black text-gray-600 min-w-[48px] text-center">
+            Uge {week}
+          </span>
+          <button onClick={() => setWeek(w => Math.min(53, w + 1))}
+            className="font-black text-gray-500 text-sm w-5 text-center leading-none">
+            ›
+          </button>
+        </div>
       </div>
 
       {/* 2x2 grid — center-aligned indhold */}

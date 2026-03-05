@@ -10,7 +10,7 @@ export const getMe = () =>
   api.get('/auth/me')
 
 export const validateInvite = (token) =>
-  api.get(`/auth/invite/${token}`)
+  api.get(`/invite/validate/${token}`)
 
 export const logout = () =>
   api.post('/auth/logout')

@@ -10,19 +10,24 @@ const router = express.Router();
 router.post('/generate', authenticateToken, adminOnly, async (req, res) => {
   try {
     const db = getDb();
+    const { player_name } = req.body;
     const token = uuidv4();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
     await db.execute({
-      sql: 'INSERT INTO invite_tokens (token, team_id, created_by, expires_at) VALUES (?, ?, ?, ?)',
-      args: [token, req.user.team_id, req.user.user_id, expiresAt]
+      sql: 'INSERT INTO invite_tokens (token, team_id, created_by, expires_at, player_name) VALUES (?, ?, ?, ?, ?)',
+      args: [token, req.user.team_id, req.user.user_id, expiresAt, player_name || null]
     });
 
-    const baseUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    // Brug CLIENT_URL env var, ellers brug request origin, ellers Render-URL
+    const baseUrl = process.env.CLIENT_URL
+      || `${req.protocol}://${req.get('host')}`
+      || 'https://gif-app-hs2g.onrender.com';
     res.json({
       token,
       invite_url: `${baseUrl}/register?token=${token}`,
       expires_at: expiresAt,
+      player_name: player_name || null,
     });
   } catch (err) {
     console.error(err);
@@ -42,7 +47,7 @@ router.get('/validate/:token', async (req, res) => {
     })).rows[0];
 
     if (!invite) return res.status(400).json({ valid: false, error: 'Ugyldigt eller udløbet invite-link' });
-    res.json({ valid: true, team_name: invite.team_name, team_id: invite.team_id });
+    res.json({ valid: true, team_name: invite.team_name, team_id: invite.team_id, player_name: invite.player_name || null });
   } catch (err) {
     res.status(500).json({ error: 'Serverfejl' });
   }

@@ -34,7 +34,13 @@ export default function RegisterPage() {
     if (form.password.length < 6) { toast.error('Password skal være mindst 6 tegn'); return }
     setLoading(true)
     try {
-      const { data } = await register({ ...form, inviteToken: token })
+      const { data } = await register({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        phone_number: form.phone || null,
+        invite_token: token,
+      })
       login(data.token, data.user)
       toast.success('Konto oprettet! Velkommen! 🎉')
       navigate('/')
@@ -79,9 +85,19 @@ export default function RegisterPage() {
         <div className="text-center mb-6">
           <div className="text-5xl mb-3">🎉</div>
           <h1 className="text-2xl font-black text-gray-900">Kom med på holdet! 🎉</h1>
-          {inviteData?.teamName && (
+          {(inviteData?.team_name || inviteData?.teamName) && (
             <div className="mt-2 bg-primary/10 text-primary font-black text-sm px-4 py-2 rounded-2xl inline-block">
-              ⚽ {inviteData.teamName}
+              ⚽ {inviteData.team_name || inviteData.teamName}
+            </div>
+          )}
+          {inviteData?.player_name && (
+            <div className="mt-3 bg-green-50 border-2 border-green-200 rounded-2xl px-4 py-3 text-center">
+              <p className="text-green-700 font-black text-sm">
+                👦 Du opretter konto til <span className="text-green-900">{inviteData.player_name}</span>
+              </p>
+              <p className="text-green-600 text-xs font-semibold mt-0.5">
+                Udfyld dine egne oplysninger som forælder
+              </p>
             </div>
           )}
         </div>

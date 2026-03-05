@@ -8,7 +8,7 @@ export const setCupModeOverride = (override) =>
 // Brugerstyring
 export const getAdminUsers = () => api.get('/admin/users')
 export const deleteAdminUser = (id) => api.delete(`/admin/users/${id}`)
-export const generateInviteLink = (data) => api.post('/admin/invite', data)
+export const generateInviteLink = (data) => api.post('/invite/generate', data)
 
 // Opgaver
 export const getAdminTasks = () => api.get('/admin/tasks')

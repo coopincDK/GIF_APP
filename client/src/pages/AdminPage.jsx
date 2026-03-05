@@ -163,10 +163,14 @@ function CupModeControl() {
 
 // ─── Brugere Tab ──────────────────────────────────────────────────────────────
 function UsersTab() {
-  const [users, setUsers] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { user: adminUser } = useAuth()
+  const [users, setUsers]         = useState([])
+  const [loading, setLoading]     = useState(true)
   const [deleteTarget, setDeleteTarget] = useState(null)
-  const [inviteLink, setInviteLink] = useState('')
+  const [inviteLink, setInviteLink]     = useState('')
+  const [generating, setGenerating]     = useState(false)
+  const [copied, setCopied]             = useState(false)
+  const [playerName, setPlayerName]     = useState('')
 
   useEffect(() => {
     getAdminUsers()
@@ -178,48 +182,102 @@ function UsersTab() {
   const handleDelete = async () => {
     try {
       await deleteAdminUser(deleteTarget)
-      setUsers(u => u.filter(x => x.id !== deleteTarget))
+      setUsers(u => u.filter(x => (x.user_id || x.id) !== deleteTarget))
       toast.success('Bruger slettet')
     } catch { toast.error('Kunne ikke slette bruger') }
     setDeleteTarget(null)
   }
 
   const handleInvite = async () => {
+    if (!playerName.trim()) { toast.error('Skriv spillerens navn'); return }
+    setGenerating(true)
     try {
-      const { data } = await generateInviteLink({ teamId: 1 })
-      const link = `${window.location.origin}/register?token=${data.token}`
+      const { data } = await generateInviteLink({ player_name: playerName.trim() })
+      const link = data.invite_url || `${window.location.origin}/register?token=${data.token}`
       setInviteLink(link)
-      navigator.clipboard?.writeText(link)
-      toast.success('Invite-link kopieret! 📋')
-    } catch { toast.error('Kunne ikke generere link') }
+      // Prøv at kopiere automatisk
+      try { await navigator.clipboard?.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 3000) } catch {}
+      toast.success(`Invite-link til ${playerName} klar! 🎉`)
+    } catch (e) {
+      toast.error(e?.response?.data?.error || 'Kunne ikke generere link')
+    } finally { setGenerating(false) }
   }
 
   if (loading) return <div className="py-6 text-center"><InlineSpinner size={24} /></div>
 
   return (
     <div className="space-y-4">
-      <motion.button whileTap={{ scale: 0.97 }} onClick={handleInvite}
-        className="w-full flex items-center justify-center gap-2 bg-primary text-white font-black py-3 rounded-2xl shadow-md">
-        <LinkIcon size={16} /> Generer invite-link
-      </motion.button>
-      {inviteLink && (
-        <div className="bg-green-50 border border-green-200 rounded-2xl p-3">
-          <p className="text-green-700 text-xs font-bold break-all">{inviteLink}</p>
-        </div>
-      )}
+      {/* Opret spiller + invite */}
+      <div className="bg-gradient-to-br from-primary/5 to-green-50 rounded-3xl p-4 border border-primary/20">
+        <p className="font-black text-gray-800 mb-1">⚽ Opret spiller + invitér forældre</p>
+        <p className="text-gray-500 text-xs font-semibold mb-3">
+          Skriv spillerens navn → generer link → send til forældre
+        </p>
+        <input
+          value={playerName}
+          onChange={e => setPlayerName(e.target.value)}
+          placeholder="Spillerens navn (fx Malthe Lau)"
+          className="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 font-semibold text-gray-900 focus:outline-none focus:border-primary mb-3"
+        />
+        <motion.button whileTap={{ scale: 0.97 }} onClick={handleInvite} disabled={generating || !playerName.trim()}
+          className="w-full flex items-center justify-center gap-2 bg-primary text-white font-black py-3 rounded-2xl shadow-md disabled:opacity-50">
+          {generating ? <InlineSpinner size={16} /> : <LinkIcon size={16} />}
+          {generating ? 'Genererer...' : 'Generer invite-link'}
+        </motion.button>
+
+        {inviteLink && (
+          <div className="mt-3 space-y-2">
+            <div className="bg-white border-2 border-primary/30 rounded-2xl p-3">
+              <p className="text-[10px] font-black text-gray-500 uppercase mb-1">
+                {copied ? '✅ Kopieret!' : 'Invite-link til ' + playerName}
+              </p>
+              <p className="text-primary text-xs font-bold break-all">{inviteLink}</p>
+            </div>
+            {/* Del-knapper */}
+            <div className="flex gap-2">
+              {/* Web Share API (virker på mobil) */}
+              {'share' in navigator && (
+                <motion.button whileTap={{ scale: 0.95 }}
+                  onClick={() => navigator.share({ title: `Invitér til GIF Hold-Helte`, text: `Opret konto til ${playerName} her:`, url: inviteLink })}
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-blue-500 text-white font-black py-2.5 rounded-2xl text-sm">
+                  📤 Del link
+                </motion.button>
+              )}
+              {/* Kopier */}
+              <motion.button whileTap={{ scale: 0.95 }}
+                onClick={() => { navigator.clipboard?.writeText(inviteLink); setCopied(true); setTimeout(() => setCopied(false), 3000) }}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-gray-100 text-gray-700 font-black py-2.5 rounded-2xl text-sm">
+                {copied ? '✅ Kopieret' : '📋 Kopier'}
+              </motion.button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Brugerliste */}
+      <p className="font-black text-gray-700 text-sm">👥 Holdets brugere ({users.length})</p>
       <ConfirmModal open={!!deleteTarget} title="Slet bruger?" message="Brugeren slettes permanent."
         onConfirm={handleDelete} onCancel={() => setDeleteTarget(null)} danger />
-      {users.map(u => (
-        <div key={u.id} className="bg-white rounded-2xl shadow-sm p-4 flex items-center justify-between">
-          <div>
-            <p className="font-black text-gray-900">{u.name}</p>
-            <p className="text-gray-400 text-xs font-semibold">{u.email} · {u.role}</p>
+      {users.map(u => {
+        const uid = u.user_id || u.id
+        return (
+          <div key={uid} className="bg-white rounded-2xl shadow-sm p-4 flex items-center gap-3">
+            {u.profile_picture_url
+              ? <img src={u.profile_picture_url} className="w-10 h-10 rounded-full object-cover flex-shrink-0" alt="" />
+              : <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 font-black text-primary">{u.name?.[0]}</div>
+            }
+            <div className="flex-1 min-w-0">
+              <p className="font-black text-gray-900 truncate">{u.name}</p>
+              <p className="text-gray-400 text-xs font-semibold truncate">{u.email} · <span className={u.role === 'admin' ? 'text-primary' : ''}>{u.role}</span></p>
+            </div>
+            {u.role !== 'admin' && (
+              <button onClick={() => setDeleteTarget(uid)} className="text-red-400 p-2 flex-shrink-0">
+                <Trash2 size={16} />
+              </button>
+            )}
           </div>
-          <button onClick={() => setDeleteTarget(u.id)} className="text-red-400 p-2">
-            <Trash2 size={16} />
-          </button>
-        </div>
-      ))}
+        )
+      })}
       {users.length === 0 && <p className="text-center text-gray-400 font-semibold py-6">Ingen brugere endnu</p>}
     </div>
   )
